@@ -59,10 +59,10 @@ function configure_snapper() {
     sed -i 's/GRUB_DISABLE_RECOVERY=true/GRUB_DISABLE_RECOVERY=false/g' /etc/default/grub
 
     pacman -S snap-pac --noconfirm --needed
+    pacman -S cronie --noconfirm --needed 
+    
     systemctl enable snapper-boot.timer
     systemctl enable snapper-cleanup.timer
-    
-    pacman -S cronie --noconfirm --needed 
     systemctl enable cronie.service
 
     grub-mkconfig -o /boot/grub/grub.cfg
