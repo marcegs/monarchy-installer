@@ -42,36 +42,36 @@ function configure_bootloader() {
 
 function configure_snapper() {
     pacman -S snapper grub-btrfs --noconfirm --needed
+    echo "snapper -c root create-config /"
     snapper -c root create-config /
+    read -n1 -p "temp press key"
+    echo "btrfs sub del /.snapshots/"
     btrfs sub del /.snapshots/
+    read -n1 -p "temp press key"
+    echo "mkdir /.snapshots"
     mkdir /.snapshots
+    read -n1 -p "temp press key"
 
     # this could probably be a lot better ;-;
     uuid_no_spli=$(cat /etc/fstab | grep /home | awk '{print $1}')
     uuid_split=(${uuid_no_spli//=/ })
     uuid=${uuid_split[1]}
-    echo $uuid
-    read -n1 -p "temp press key"
 
     echo "UUID=$uuid    /.snapshots    btrfs    rw,relatime,compress=lzo,ssd,space_cache=v2,subvol=@snapshots 0 0" >> /etc/fstab
     mount /.snapshots
 
     systemctl enable grub-btrfs.path
-    read -n1 -p "temp press key"
 
     sed -i 's/GRUB_DISABLE_RECOVERY=true/GRUB_DISABLE_RECOVERY=false/g' /etc/default/grub
 
     pacman -S snap-pac --noconfirm --needed
     systemctl enable snapper-boot.timer
     systemctl enable snapper-cleanup.timer
-    read -n1 -p "temp press key"
     
     pacman -S cronie --noconfirm --needed 
-    systemctl enable cron.service
-    read -n1 -p "temp press key"
+    systemctl enable cronie.service
 
     grub-mkconfig -o /boot/grub/grub.cfg
-    read -n1 -p "temp press key"
 }
 
 # 1 - timesone
