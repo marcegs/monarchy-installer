@@ -42,15 +42,9 @@ function configure_bootloader() {
 
 function configure_snapper() {
     pacman -S snapper grub-btrfs --noconfirm --needed
-    echo "snapper -c root create-config /"
-    snapper -c root create-config /
-    read -n1 -p "temp press key"
-    echo "btrfs sub del /.snapshots/"
+    snapper --no-dbus -c root create-config /
     btrfs sub del /.snapshots/
-    read -n1 -p "temp press key"
-    echo "mkdir /.snapshots"
     mkdir /.snapshots
-    read -n1 -p "temp press key"
 
     # this could probably be a lot better ;-;
     uuid_no_spli=$(cat /etc/fstab | grep /home | awk '{print $1}')
