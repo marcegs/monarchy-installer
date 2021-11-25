@@ -100,9 +100,8 @@ if [ $awser = "True" ]; then
 
 
     rm -r /mnt/post-chroot-temp/
-    umount -r /mnt
+    umount -R /mnt
 
-    read -n1 -p "temp press key"
     message_box "Done!" "Installation finished! You can now reboot and login into your new system!"
 
     # == 4 ==

@@ -10,7 +10,7 @@ function set_localization() {
     sed -i "s/#$1/$1/g" /etc/locale.gen
     locale-gen
     echo "LANG=$1" >/etc/locale.conf
-    localectl set-keymap "$2"
+    echo "KEYMAP=$2" >/etc/vconsole.conf
 }
 # $pc_name
 function configure_network() {
