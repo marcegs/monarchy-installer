@@ -14,7 +14,7 @@ function set_localization() {
 }
 # $pc_name
 function configure_network() {
-    pacman -S networkmanager --noconfirm
+    pacman -S networkmanager --noconfirm --needed
 
     echo "$1" >/etc/hostname
     echo "127.0.0.1        localhost
@@ -35,14 +35,38 @@ function set_root_password() {
     sed -i 's/# %wheel ALL=(ALL) ALL/%wheel ALL=(ALL) ALL/g' /etc/sudoers # make so users of the wheel group can run sudo
 }
 function configure_bootloader() {
-    pacman --needed -S grub efibootmgr --noconfirm
+    pacman --needed -S grub efibootmgr --noconfirm --needed
     grub-install
     grub-mkconfig -o /boot/grub/grub.cfg
 }
 
-#function configure_snapper() {
-#
-#}
+function configure_snapper() {
+    pacman -S snapper grub-btrfs --noconfirm --needed
+    snapper --no-dbus -c root create-config /
+    btrfs sub del /.snapshots/
+    mkdir /.snapshots
+
+    # this could probably be a lot better ;-;
+    uuid_no_spli=$(cat /etc/fstab | grep /home | awk '{print $1}')
+    uuid_split=(${uuid_no_spli//=/ })
+    uuid=${uuid_split[1]}
+
+    echo "UUID=$uuid    /.snapshots    btrfs    rw,relatime,compress=lzo,ssd,space_cache=v2,subvol=@snapshots 0 0" >> /etc/fstab
+    mount /.snapshots
+
+    systemctl enable grub-btrfs.path
+
+    sed -i 's/GRUB_DISABLE_RECOVERY=true/GRUB_DISABLE_RECOVERY=false/g' /etc/default/grub
+
+    pacman -S snap-pac --noconfirm --needed
+    systemctl enable snapper-boot.timer
+    systemctl enable snapper-cleanup.timer
+    
+    pacman -S cronie --noconfirm --needed 
+    systemctl enable cronie.service
+
+    grub-mkconfig -o /boot/grub/grub.cfg
+}
 
 # 1 - timesone
 # 2 - locale_select
@@ -57,5 +81,4 @@ configure_network $3
 create_initramfs
 set_root_password $4 $5
 configure_bootloader
-#configure_snapper
-#read -n1 -p "temp press key"
+configure_snapper
