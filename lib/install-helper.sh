@@ -1,9 +1,9 @@
-#!/bin/bash
+k#!/bin/bash
 
 function update_system_clock() {
     timedatectl set-ntp true
 }
-# $install_disk, $should_swap
+
 function disk_partition() {
     # UEFI GPT ONLY FOR NOW!
 
@@ -46,7 +46,7 @@ function disk_partition() {
         ) | fdisk "/dev/$install_disk"
     fi
 }
-# $install_disk, $should_swap, #should_encrypt
+
 function format_partition() {
     mkfs.fat -F 32 "/dev/$install_disk"1
 
@@ -61,36 +61,57 @@ function format_partition() {
         mkfs.btrfs -L root "/dev/$install_disk"2 -f
     fi
 }
-# $install_disk, $should_swap
+
+function mkfs_btrfs() {
+    if [ $should_encrypt = "True" ]; then
+        (
+            echo "YES"
+            echo "$encrypt_password"
+            echo "$encrypt_password"
+        ) | cryptsetup luksFormat "/dev/$install_disk$1"
+        
+        (
+            echo "$encrypt_password"
+        ) cryptsetup luksOpen "/dev/$install_disk$1" cryptroot
+
+        mkfs.btrfs -L root "/dev/mapper/cryptroot" -f
+    else
+        mkfs.btrfs -L root "/dev/$install_disk$1" -f
+    fi
+}
+
 function mount_partition() {
     sdx=""
     if [ $should_swap = "True" ]; then
-        sdx=3
+        sdx="/dev/$install_disk''3"
     else
-        sdx=2
+        sdx="/dev/$install_disk''2"
     fi
 
-    mount -o compress=lzo "/dev/$install_disk$sdx" /mnt
+    if [ $should_encrypt = "True" ]; then
+        sdx="/dev/mapper/cryptroot"
+    fi
+
+    mount -o compress=lzo $sdx /mnt
     cd /mnt
     btrfs su cr @
     btrfs su cr @tmp
     btrfs su cr @home
     btrfs su cr @log
     btrfs su cr @pkg
-    btrfs sub cr @snapshots
+    btrfs su cr @snapshots
 
     cd /
     umount /mnt
-    mount -o relatime,space_cache=v2,ssd,compress=lzo,subvol=@ "/dev/$install_disk$sdx" /mnt
+    mount -o noatime,space_cache=v2,discard=async,compress=lzo,subvol=@ $sdx /mnt
     mkdir -p /mnt/{boot/efi,home,var/log,var/cache/pacman/pkg,btrfs,tmp}
     mount "/dev/$install_disk"1 /mnt/boot/efi
-    mount -o relatime,space_cache=v2,ssd,compress=lzo,subvol=@home "/dev/$install_disk$sdx" /mnt/home
-    mount -o relatime,space_cache=v2,ssd,compress=lzo,subvol=@log "/dev/$install_disk$sdx" /mnt/var/log
-    mount -o relatime,space_cache=v2,ssd,compress=lzo,subvol=@pkg "/dev/$install_disk$sdx" /mnt/var/cache/pacman/pkg/
-    mount -o relatime,space_cache=v2,ssd,compress=lzo,subvol=@tmp "/dev/$install_disk$sdx" /mnt/tmp
+    mount -o noatime,space_cache=v2,discard=async,compress=lzo,subvol=@home $sdx /mnt/home
+    mount -o noatime,space_cache=v2,discard=async,compress=lzo,subvol=@log $sdx /mnt/var/log
+    mount -o noatime,space_cache=v2,discard=async,compress=lzo,subvol=@pkg $sdx /mnt/var/cache/pacman/pkg/
+    mount -o noatime,space_cache=v2,discard=async,compress=lzo,subvol=@tmp $sdx /mnt/tmp
 }
 
-# $keymap_select
 function install_base() {
     pacstrap /mnt base linux linux-firmware linux-headers base-devel git nano sudo man-db man-pages btrfs-progs bash-completion
 }

@@ -4,34 +4,6 @@ source lib/menu-helper.sh
 source lib/install-helper.sh
 source lib/info-helper.sh
 
-function get_password() {
-    pass_title="$1 Password"
-    pass_text="Please type your $1 password."
-
-    repeat_pass_title="Repeat $1 Password"
-    repeat_pass_text="Please confirm your $1 password."
-
-    password=$(password_box "$pass_title" "$pass_text")
-    password_confirm=$(password_box "$repeat_pass_title" "$repeat_pass_text")
-
-    while [[ "$password" != "$password_confirm" || "$password" = "" ]]; do
-        message_box "Bad Password" "Passwords did not match or was blank."
-        password=$(password_box "$pass_title" "$pass_text")
-        password_confirm=$(password_box "$repeat_pass_title" "$repeat_pass_text")
-    done
-    echo $password
-}
-
-function final_warning() {
-    doit=$(yes_no_box "Final Warning!" "You are about to write changes to the disk.
-THIS ACTION CANNOT BE UNDONE!
-Let's do it?")
-    if [ $doit != "True" ]; then
-        echo ":("
-        exit
-    fi
-}
-
 message_box "Welcome!" "Welcome to monarchy-installer! Yet another arch installer.
 
 WARNING: This script is still in development and might brick your entire system! Use it only inside a VM or in a spare computer!
@@ -87,17 +59,23 @@ Complete: Cinnamon desktop environment and a lot, a lot more :)
     user_name=$(input_box "User Name" "What name do you want to give to your user?")
     pc_name=$(input_box "Computer Name" "What name should be given to this computer?")
     password=$(get_password "User")
-
+    
     # ==================== Install ====================
 
-    final_warning
+    doit=$(yes_no_box "Final Warning!" "You are about to write changes to the disk.
+THIS ACTION CANNOT BE UNDONE!
+Let's do it?")
+    if [ $doit != "True" ]; then
+        echo ":("
+        exit
+    fi
 
     # == 1 ==
-    
+
     update_system_clock
-    disk_partition 
-    format_partition 
-    mount_partition 
+    disk_partition
+    format_partition
+    mount_partition
     install_base
     gen_fstab
 
@@ -105,7 +83,7 @@ Complete: Cinnamon desktop environment and a lot, a lot more :)
 
     mkdir /mnt/post-chroot-temp/
     cp /root/monarchy-installer/post-chroot-minimal.sh /mnt/post-chroot-temp/
-    arch-chroot /mnt /usr/bin/bash /post-chroot-temp/post-chroot-minimal.sh $timezone $locale_select $pc_name $password $user_name $keymap_select
+    arch-chroot /mnt /usr/bin/bash /post-chroot-temp/post-chroot-minimal.sh $timezone $locale_select $pc_name $password $user_name $keymap_select $should_encrypt $install_disk $should_swap
 
     if [ $install_type = "Complete" ]; then
         cp /root/monarchy-installer/post-chroot-complete.sh /mnt/post-chroot-temp/
