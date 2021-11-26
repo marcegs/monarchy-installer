@@ -36,6 +36,7 @@ function set_root_password() {
     sed -i 's/# %wheel ALL=(ALL) ALL/%wheel ALL=(ALL) ALL/g' /etc/sudoers # make so users of the wheel group can run sudo
 }
 function configure_bootloader() {
+    pacman --needed -S grub efibootmgr --noconfirm --needed
     if [ $1 = "True" ]; then
         if [ $3 = "True" ]; then
             uuid=$(blkid | grep /dev/$2'3' | awk '{print $2}')
@@ -46,7 +47,6 @@ function configure_bootloader() {
         sed -i "s/loglevel=3 quiet/loglevel=3 quiet cryptdevice=$uuid:cryptroot root=\/dev\/mapper\/cryptroot/g" /etc/default/grub
     fi
 
-    pacman --needed -S grub efibootmgr --noconfirm --needed
     grub-install
     grub-mkconfig -o /boot/grub/grub.cfg
 }
