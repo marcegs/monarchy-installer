@@ -18,8 +18,6 @@ wow now that's a lot of features!
 
 ### Planned Features
 
-Basically, make a script that installs Linux Mint but on Arch!
-
 - [ ] Optional full disk encryption
 - [ ] Options between complete and minimal install
 - [ ] Everything else
