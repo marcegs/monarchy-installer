@@ -6,12 +6,10 @@ default_height=25
 default_width=60
 default_lines=17
 
-# $1 title, $2 text
 function message_box() {
     whiptail --msgbox --title "$1" --backtitle "$backtitle" "$2" $default_height $default_width 3>&1 1>&2 2>&3
 }
 
-# $1 title, $2 question
 function yes_no_box() {
     if whiptail --yesno --title "$1" --backtitle "$backtitle" "$2" 9 $default_width 3>&1 1>&2 2>&3; then
         echo "True"
@@ -20,7 +18,6 @@ function yes_no_box() {
     fi
 }
 
-# $1 title, $2 text, $3 --has-tag-item, $4 list
 function menu_box() {
     title=$1 # Save first argument in a variable
     shift    # Shift all arguments to the left (original $1 gets lost)
@@ -53,12 +50,10 @@ function menu_box() {
     fi
 }
 
-# $1 title, $2 question
 function input_box() {
     whiptail --title "$1" --backtitle "$backtitle" --inputbox "$2" 9 $default_width 3>&1 1>&2 2>&3
 }
 
-# $1 title, $2 question
 function password_box() {
     whiptail --title "$1" --backtitle "$backtitle" --passwordbox "$2" 9 $default_width 3>&1 1>&2 2>&3
 }

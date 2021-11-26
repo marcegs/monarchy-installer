@@ -1,18 +1,15 @@
 #!/bin/bash
 
-# $timezone
 function set_timesone() {
     ln -sf $1 /etc/localtime
     hwclock --systohc
 }
-# $locale_select
 function set_localization() {
     sed -i "s/#$1/$1/g" /etc/locale.gen
     locale-gen
     echo "LANG=$1" >/etc/locale.conf
     echo "KEYMAP=$2" >/etc/vconsole.conf
 }
-# $pc_name
 function configure_network() {
     pacman -S networkmanager --noconfirm --needed
 
@@ -59,10 +56,10 @@ function configure_snapper() {
     sed -i 's/GRUB_DISABLE_RECOVERY=true/GRUB_DISABLE_RECOVERY=false/g' /etc/default/grub
 
     pacman -S snap-pac --noconfirm --needed
+    pacman -S cronie --noconfirm --needed 
+    
     systemctl enable snapper-boot.timer
     systemctl enable snapper-cleanup.timer
-    
-    pacman -S cronie --noconfirm --needed 
     systemctl enable cronie.service
 
     grub-mkconfig -o /boot/grub/grub.cfg

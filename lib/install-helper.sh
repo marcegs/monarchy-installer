@@ -1,45 +1,73 @@
 #!/bin/bash
-# == 1 ==
+
 function update_system_clock() {
     timedatectl set-ntp true
 }
-# $install_disk, $should_swap
 function disk_partition() {
     # UEFI GPT ONLY FOR NOW!
-    (
-        echo g     # new GPT partition table
-        echo n     # new partition
-        echo       # default number
-        echo       # default start
-        echo +500M # 500m
-        echo t     # set type
-        echo 1     # EFI file system
-        echo n     # new partition
-        echo       # default number
-        echo       # default start
-        echo +2G   # 2g
-        echo t     # set type
-        echo 2     # partition number 2
-        echo 19    # linux swap
-        echo n     # new partition
-        echo       # default number
-        echo       # default start
-        echo       # all available space
-        echo w     # write changes to disk
-    ) | fdisk "/dev/$1"
+
+    if [ $should_swap = "True" ]; then
+        (
+            echo g     # new GPT partition table
+            echo n     # new partition
+            echo       # default number
+            echo       # default start
+            echo +500M # 500m
+            echo t     # set type
+            echo 1     # EFI file system
+            echo n     # new partition
+            echo       # default number
+            echo       # default start
+            echo +2G   # 2g
+            echo t     # set type
+            echo 2     # partition number 2
+            echo 19    # linux swap
+            echo n     # new partition
+            echo       # default number
+            echo       # default start
+            echo       # all available space
+            echo w     # write changes to disk
+        ) | fdisk "/dev/$install_disk"
+    else
+        (
+            echo g     # new GPT partition table
+            echo n     # new partition
+            echo       # default number
+            echo       # default start
+            echo +500M # 500m
+            echo t     # set type
+            echo 1     # EFI file system
+            echo n     # new partition
+            echo       # default number
+            echo       # default start
+            echo       # all available space
+            echo w     # write changes to disk
+        ) | fdisk "/dev/$install_disk"
+    fi
 }
-# $install_disk, $should_swap, #should_encrypt
 function format_partition() {
-    mkfs.fat -F 32 "/dev/$1"1
+    mkfs.fat -F 32 "/dev/$install_disk"1
 
-    mkswap "/dev/$1"2
-    swapon "/dev/$1"2
+    if [ $should_swap = "True" ]; then
 
-    mkfs.btrfs -L root "/dev/$1"3 -f
+        mkswap "/dev/$install_disk"2
+        swapon "/dev/$install_disk"2
+
+        mkfs.btrfs -L root "/dev/$install_disk"3 -f
+
+    else
+        mkfs.btrfs -L root "/dev/$install_disk"2 -f
+    fi
 }
-# $install_disk
 function mount_partition() {
-    mount -o compress=lzo "/dev/$1"3 /mnt
+    sdx=""
+    if [ $should_swap = "True" ]; then
+        sdx=3
+    else
+        sdx=2
+    fi
+
+    mount -o compress=lzo "/dev/$install_disk$sdx" /mnt
     cd /mnt
     btrfs su cr @
     btrfs su cr @tmp
@@ -50,22 +78,20 @@ function mount_partition() {
 
     cd /
     umount /mnt
-    mount -o relatime,space_cache=v2,ssd,compress=lzo,subvol=@ "/dev/$1"3 /mnt
+    mount -o relatime,space_cache=v2,ssd,compress=lzo,subvol=@ "/dev/$install_disk$sdx" /mnt
     mkdir -p /mnt/{boot/efi,home,var/log,var/cache/pacman/pkg,btrfs,tmp}
-    mount "/dev/$1"1 /mnt/boot/efi
-    mount -o relatime,space_cache=v2,ssd,compress=lzo,subvol=@home "/dev/$1"3 /mnt/home
-    mount -o relatime,space_cache=v2,ssd,compress=lzo,subvol=@log "/dev/$1"3 /mnt/var/log
-    mount -o relatime,space_cache=v2,ssd,compress=lzo,subvol=@pkg "/dev/$1"3 /mnt/var/cache/pacman/pkg/
-    mount -o relatime,space_cache=v2,ssd,compress=lzo,subvol=@tmp "/dev/$1"3 /mnt/tmp
+    mount "/dev/$install_disk"1 /mnt/boot/efi
+    mount -o relatime,space_cache=v2,ssd,compress=lzo,subvol=@home "/dev/$install_disk$sdx" /mnt/home
+    mount -o relatime,space_cache=v2,ssd,compress=lzo,subvol=@log "/dev/$install_disk$sdx" /mnt/var/log
+    mount -o relatime,space_cache=v2,ssd,compress=lzo,subvol=@pkg "/dev/$install_disk$sdx" /mnt/var/cache/pacman/pkg/
+    mount -o relatime,space_cache=v2,ssd,compress=lzo,subvol=@tmp "/dev/$install_disk$sdx" /mnt/tmp
 }
 
-# == 2 ==
 # $keymap_select
 function install_base() {
     pacstrap /mnt base linux linux-firmware linux-headers base-devel git nano sudo man-db man-pages btrfs-progs bash-completion
 }
 
-# == 3 ==
 function gen_fstab() {
     genfstab -U /mnt >>/mnt/etc/fstab
 }
