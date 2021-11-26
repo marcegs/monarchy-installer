@@ -94,5 +94,5 @@ set_localization $2 $6
 configure_network $3
 create_initramfs $7
 set_root_password $4 $5
-configure_bootloader $7 $8
+configure_bootloader $7 $8 $9
 configure_snapper
