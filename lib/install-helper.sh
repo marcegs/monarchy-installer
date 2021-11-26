@@ -1,4 +1,4 @@
-k#!/bin/bash
+#!/bin/bash
 
 function update_system_clock() {
     timedatectl set-ntp true
@@ -64,15 +64,8 @@ function format_partition() {
 
 function mkfs_btrfs() {
     if [ $should_encrypt = "True" ]; then
-        (
-            echo "YES"
-            echo "$encrypt_password"
-            echo "$encrypt_password"
-        ) | cryptsetup luksFormat "/dev/$install_disk$1"
-        
-        (
-            echo "$encrypt_password"
-        ) cryptsetup luksOpen "/dev/$install_disk$1" cryptroot
+        cryptsetup luksFormat "/dev/$install_disk$1"
+        cryptsetup luksOpen "/dev/$install_disk$1" cryptroot
 
         mkfs.btrfs -L root "/dev/mapper/cryptroot" -f
     else

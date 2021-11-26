@@ -50,9 +50,9 @@ Complete: Cinnamon desktop environment and a lot, a lot more :)
     should_swap=$(yes_no_box "Swap" "Would you like to create a 2G Swap partition?")
 
     should_encrypt=$(yes_no_box "Disk encryption" "Would you like to encrypt your new installation?")
-    if [ $should_encrypt = "True" ]; then
-        encrypt_password=$(get_password "Encryption")
-    fi
+    #if [ $should_encrypt = "True" ]; then
+    encrypt_password="letmeleavethisherefornow"
+    #fi
 
     # ==================== Users ====================
 
