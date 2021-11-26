@@ -64,7 +64,7 @@ function format_partition() {
 
 function mkfs_btrfs() {
     if [ $should_encrypt = "True" ]; then
-        echo "$encrypt_password" cryptsetup luksFormat "/dev/$install_disk$1" -d -
+        echo "$encrypt_password" | cryptsetup luksFormat "/dev/$install_disk$1" -d -
         echo "$encrypt_password" | cryptsetup luksOpen "/dev/$install_disk$1" cryptroot -d -
 
         mkfs.btrfs -L root "/dev/mapper/cryptroot" -f
