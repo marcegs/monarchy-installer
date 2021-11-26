@@ -20,7 +20,7 @@ function configure_network() {
     systemctl enable NetworkManager
 }
 function create_initramfs() {
-    if [ $7 = "True" ]; then
+    if [ $1 = "True" ]; then
         sed -i "s/block filesystems/block encrypt btrfs filesystems/g" /etc/mkinitcpio.conf
     else
         sed -i "s/block filesystems/block btrfs filesystems/g" /etc/mkinitcpio.conf
@@ -43,7 +43,7 @@ function configure_bootloader() {
             uuid=$(blkid | grep /dev/$2'2' | awk '{print $2}')
         fi
         uuid=${uuid//'"'/''}
-        sed -i "s/loglevel=3 quiet/loglevel=3 quiet cryptdevice=$uuid:cryptroot root=/dev/mapper/cryptroot/g" /etc/default/grub
+        sed -i "s/loglevel=3 quiet/loglevel=3 quiet cryptdevice=$uuid:cryptroot root=\/dev\/mapper\/cryptroot/g" /etc/default/grub
     fi
 
     pacman --needed -S grub efibootmgr --noconfirm --needed
