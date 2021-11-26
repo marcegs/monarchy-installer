@@ -55,17 +55,24 @@ function format_partition() {
         mkswap "/dev/$install_disk"2
         swapon "/dev/$install_disk"2
 
-        mkfs.btrfs -L root "/dev/$install_disk"3 -f
+        mkfs_btrfs 3
 
     else
-        mkfs.btrfs -L root "/dev/$install_disk"2 -f
+        mkfs_btrfs 2
     fi
 }
 
 function mkfs_btrfs() {
     if [ $should_encrypt = "True" ]; then
-        cryptsetup luksFormat "/dev/$install_disk$1"
-        cryptsetup luksOpen "/dev/$install_disk$1" cryptroot
+        (
+            echo "YES"
+            echo "$encrypt_password"
+            echo "$encrypt_password"
+        ) | cryptsetup luksFormat "/dev/$install_disk$1"
+        
+        (
+            echo "$encrypt_password"
+        ) | cryptsetup luksOpen "/dev/$install_disk$1" cryptroot
 
         mkfs.btrfs -L root "/dev/mapper/cryptroot" -f
     else
