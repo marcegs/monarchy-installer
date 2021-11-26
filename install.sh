@@ -59,7 +59,7 @@ Complete: Cinnamon desktop environment and a lot, a lot more :)
     user_name=$(input_box "User Name" "What name do you want to give to your user?")
     pc_name=$(input_box "Computer Name" "What name should be given to this computer?")
     password=$(get_password "User")
-    
+
     # ==================== Install ====================
 
     doit=$(yes_no_box "Final Warning!" "You are about to write changes to the disk.
@@ -71,11 +71,11 @@ Let's do it?")
     fi
 
     # == 1 ==
-
+    
     update_system_clock
-    disk_partition
-    format_partition
-    mount_partition
+    disk_partition 
+    format_partition 
+    mount_partition 
     install_base
     gen_fstab
 
@@ -83,7 +83,7 @@ Let's do it?")
 
     mkdir /mnt/post-chroot-temp/
     cp /root/monarchy-installer/post-chroot-minimal.sh /mnt/post-chroot-temp/
-    arch-chroot /mnt /usr/bin/bash /post-chroot-temp/post-chroot-minimal.sh $timezone $locale_select $pc_name $password $user_name $keymap_select $should_encrypt $install_disk $should_swap
+    arch-chroot /mnt /usr/bin/bash /post-chroot-temp/post-chroot-minimal.sh $timezone $locale_select $pc_name $password $user_name $keymap_select
 
     if [ $install_type = "Complete" ]; then
         cp /root/monarchy-installer/post-chroot-complete.sh /mnt/post-chroot-temp/

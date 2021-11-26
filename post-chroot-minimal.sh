@@ -20,11 +20,7 @@ function configure_network() {
     systemctl enable NetworkManager
 }
 function create_initramfs() {
-    if [ $1 = "True" ]; then
-        sed -i "s/block filesystems/block encrypt btrfs filesystems/g" /etc/mkinitcpio.conf
-    else
-        sed -i "s/block filesystems/block btrfs filesystems/g" /etc/mkinitcpio.conf
-    fi
+    sed -i "s/block filesystems/block btrfs filesystems/g" /etc/mkinitcpio.conf
     mkinitcpio -p linux
 }
 function set_root_password() {
@@ -37,16 +33,6 @@ function set_root_password() {
 }
 function configure_bootloader() {
     pacman --needed -S grub efibootmgr --noconfirm --needed
-    if [ $1 = "True" ]; then
-        if [ $3 = "True" ]; then
-            uuid=$(blkid | grep /dev/$2'3' | awk '{print $2}')
-        else
-            uuid=$(blkid | grep /dev/$2'2' | awk '{print $2}')
-        fi
-        uuid=${uuid//'"'/''}
-        sed -i "s/loglevel=3 quiet/loglevel=3 quiet cryptdevice=$uuid:cryptroot root=\/dev\/mapper\/cryptroot/g" /etc/default/grub
-    fi
-
     grub-install
     grub-mkconfig -o /boot/grub/grub.cfg
 }
@@ -62,7 +48,7 @@ function configure_snapper() {
     uuid_split=(${uuid_no_spli//=/ })
     uuid=${uuid_split[1]}
 
-    echo "UUID=$uuid    /.snapshots    btrfs    rw,relatime,compress=lzo,ssd,space_cache=v2,subvol=@snapshots 0 0" >>/etc/fstab
+    echo "UUID=$uuid    /.snapshots    btrfs    rw,relatime,compress=lzo,ssd,space_cache=v2,subvol=@snapshots 0 0" >> /etc/fstab
     mount /.snapshots
 
     systemctl enable grub-btrfs.path
@@ -70,8 +56,8 @@ function configure_snapper() {
     sed -i 's/GRUB_DISABLE_RECOVERY=true/GRUB_DISABLE_RECOVERY=false/g' /etc/default/grub
 
     pacman -S snap-pac --noconfirm --needed
-    pacman -S cronie --noconfirm --needed
-
+    pacman -S cronie --noconfirm --needed 
+    
     systemctl enable snapper-boot.timer
     systemctl enable snapper-cleanup.timer
     systemctl enable cronie.service
@@ -85,14 +71,11 @@ function configure_snapper() {
 # 4 - password
 # 5 - username
 # 6 - keymap_select
-# 7 - should_encrypt
-# 8 - install_disk
-# 9 - should_swap
 
 set_timesone $1
 set_localization $2 $6
 configure_network $3
-create_initramfs $7
+create_initramfs
 set_root_password $4 $5
-configure_bootloader $7 $8 $9
+configure_bootloader
 configure_snapper
