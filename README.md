@@ -20,6 +20,7 @@ wow now that's a lot of features!
 
 - [ ] Optional full disk encryption
 - [ ] Options between complete and minimal install
+- [ ] Complete install
 - [ ] Everything else
 
 ## Usage
