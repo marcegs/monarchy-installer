@@ -1,7 +1,6 @@
 # Monarchy Installer
 
 **WARNING** This script it is still an WIP. Use it at your own risk!
-**WARNING 2** UEFI ONLY! (for now)
 
 Any and all criticisms are welcome!
 
