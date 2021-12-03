@@ -74,11 +74,11 @@ Let's do it?")
     fi
 
     # == 1 ==
-    
+
     update_system_clock
-    disk_partition 
-    format_partition 
-    mount_partition 
+    disk_partition
+    format_partition
+    mount_partition
     install_base
     gen_fstab
 

@@ -3,30 +3,33 @@
 function update_system_clock() {
     timedatectl set-ntp true
 }
+
 function disk_partition() {
     # UEFI GPT ONLY FOR NOW!
 
+    swap_size=$(free -m | grep Mem: | awk '{print $2}')
+
     if [ $should_swap = "True" ]; then
         (
-            echo g     # new GPT partition table
-            echo n     # new partition
-            echo       # default number
-            echo       # default start
-            echo +500M # 500m
-            echo t     # set type
-            echo 1     # EFI file system
-            echo n     # new partition
-            echo       # default number
-            echo       # default start
-            echo +2G   # 2g
-            echo t     # set type
-            echo 2     # partition number 2
-            echo 19    # linux swap
-            echo n     # new partition
-            echo       # default number
-            echo       # default start
-            echo       # all available space
-            echo w     # write changes to disk
+            echo g                # new GPT partition table
+            echo n                # new partition
+            echo                  # default number
+            echo                  # default start
+            echo "+$swap_size''M" # 500m
+            echo t                # set type
+            echo 1                # EFI file system
+            echo n                # new partition
+            echo                  # default number
+            echo                  # default start
+            echo +2G              # 2g
+            echo t                # set type
+            echo 2                # partition number 2
+            echo 19               # linux swap
+            echo n                # new partition
+            echo                  # default number
+            echo                  # default start
+            echo                  # all available space
+            echo w                # write changes to disk
         ) | fdisk "/dev/$install_disk"
     else
         (
@@ -45,6 +48,7 @@ function disk_partition() {
         ) | fdisk "/dev/$install_disk"
     fi
 }
+
 function format_partition() {
     mkfs.fat -F 32 "/dev/$install_disk"1
     sdx="2"
@@ -60,9 +64,9 @@ function format_partition() {
         cryptsetup luksFormat --cipher aes-xts-plain64 --key-size 256 --hash sha256 --use-random "/dev/$install_disk$sdx"
         cryptsetup luksOpen "/dev/$install_disk$sdx" cryptroot
         mkfs.btrfs -L root /dev/mapper/cryptroot -f
-    else
     fi
 }
+
 function mount_partition() {
     temp_install_disk=""
     if [ $should_swap = "True" ]; then
