@@ -20,7 +20,11 @@ function configure_network() {
     systemctl enable NetworkManager
 }
 function create_initramfs() {
-    sed -i "s/block filesystems/block btrfs filesystems/g" /etc/mkinitcpio.conf
+    if [ $1 = "True" ]; then
+        sed -i "s/block filesystems/block btrfs encrypt filesystems/g" /etc/mkinitcpio.conf
+    else
+        sed -i "s/block filesystems/block btrfs filesystems/g" /etc/mkinitcpio.conf
+    fi
     mkinitcpio -p linux
 }
 function set_root_password() {
@@ -33,6 +37,12 @@ function set_root_password() {
 }
 function configure_bootloader() {
     pacman --needed -S grub efibootmgr --noconfirm --needed
+
+    if [ $1 = "True" ]; then
+     sed 's/#GRUB_ENABLE_CRYPTODISK=y/GRUB_ENABLE_CRYPTODISK=y/g' /etc/default/grub
+     sed 's/GRUB_CMDLINE_LINUX_DEFAULT="loglevel=3 quiet"/GRUB_CMDLINE_LINUX_DEFAULT="loglevel=3 quiet cryptdevice=/dev/sda3:cryptroot"/g' /etc/default/grub
+    fi
+
     grub-install
     grub-mkconfig -o /boot/grub/grub.cfg
 }
@@ -71,11 +81,12 @@ function configure_snapper() {
 # 4 - password
 # 5 - username
 # 6 - keymap_select
+# 7 - should_encrypt
 
 set_timesone $1
 set_localization $2 $6
 configure_network $3
-create_initramfs
+create_initramfs $7
 set_root_password $4 $5
-configure_bootloader
+configure_bootloader $7
 configure_snapper

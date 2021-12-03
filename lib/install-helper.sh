@@ -47,27 +47,35 @@ function disk_partition() {
 }
 function format_partition() {
     mkfs.fat -F 32 "/dev/$install_disk"1
-
+    sdx="2"
     if [ $should_swap = "True" ]; then
-
         mkswap "/dev/$install_disk"2
         swapon "/dev/$install_disk"2
-
-        mkfs.btrfs -L root "/dev/$install_disk"3 -f
-
+        sdx="3"
+        # mkfs.btrfs -L root "/dev/$install_disk"3 -f
+        # else
+        # mkfs.btrfs -L root "/dev/$install_disk"2 -f
+    fi
+    if [ $should_encrypt = "True" ]; then
+        cryptsetup luksFormat --cipher aes-xts-plain64 --key-size 256 --hash sha256 --use-random "/dev/$install_disk$sdx"
+        cryptsetup luksOpen "/dev/$install_disk$sdx" cryptroot
+        mkfs.btrfs -L root /dev/mapper/cryptroot -f
     else
-        mkfs.btrfs -L root "/dev/$install_disk"2 -f
     fi
 }
 function mount_partition() {
-    sdx=""
+    temp_install_disk=""
     if [ $should_swap = "True" ]; then
-        sdx=3
+        temp_install_disk="/dev/$install_disk''3"
     else
-        sdx=2
+        temp_install_disk="/dev/$install_disk''2"
     fi
 
-    mount -o compress=lzo "/dev/$install_disk$sdx" /mnt
+    if [ $should_encrypt = "True" ]; then
+        temp_install_disk="/dev/mapper/cryptroot"
+    fi
+
+    mount -o compress=lzo $temp_install_disk /mnt
     cd /mnt
     btrfs su cr @
     btrfs su cr @tmp
@@ -78,13 +86,15 @@ function mount_partition() {
 
     cd /
     umount /mnt
-    mount -o relatime,space_cache=v2,ssd,compress=lzo,subvol=@ "/dev/$install_disk$sdx" /mnt
+    mount -o relatime,space_cache=v2,ssd,compress=lzo,subvol=@ $temp_install_disk /mnt
     mkdir -p /mnt/{boot/efi,home,var/log,var/cache/pacman/pkg,btrfs,tmp}
     mount "/dev/$install_disk"1 /mnt/boot/efi
-    mount -o relatime,space_cache=v2,ssd,compress=lzo,subvol=@home "/dev/$install_disk$sdx" /mnt/home
-    mount -o relatime,space_cache=v2,ssd,compress=lzo,subvol=@log "/dev/$install_disk$sdx" /mnt/var/log
-    mount -o relatime,space_cache=v2,ssd,compress=lzo,subvol=@pkg "/dev/$install_disk$sdx" /mnt/var/cache/pacman/pkg/
-    mount -o relatime,space_cache=v2,ssd,compress=lzo,subvol=@tmp "/dev/$install_disk$sdx" /mnt/tmp
+    mount -o relatime,space_cache=v2,ssd,compress=lzo,subvol=@home $temp_install_disk /mnt/home
+    mount -o relatime,space_cache=v2,ssd,compress=lzo,subvol=@log $temp_install_disk /mnt/var/log
+    mount -o relatime,space_cache=v2,ssd,compress=lzo,subvol=@pkg $temp_install_disk /mnt/var/cache/pacman/pkg/
+    mount -o relatime,space_cache=v2,ssd,compress=lzo,subvol=@tmp $temp_install_disk /mnt/tmp
+
+    unset temp_install_disk
 }
 
 # $keymap_select

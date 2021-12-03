@@ -6,9 +6,12 @@ source lib/info-helper.sh
 
 message_box "Welcome!" "Welcome to monarchy-installer! Yet another arch installer.
 
-WARNING: This script is still in development and might brick your entire system! Use it only inside a VM or in a spare computer!
+WARNING This script it is still an WIP. Use it at your own risk!
+WARNING 2 UEFI ONLY! (for now)
 
-If you misstype or selected the wrong option, select no on the 'Final Warning' box and start from the beginning. This will be fixed in the future.
+Any and all criticisms are welcome!
+
+If you mistyped or selected the wrong option, select 'no' on the 'Final Warning' box and start from the beginning. This will be fixed in the future.
 "
 
 awser=$(yes_no_box "Monarchy" "Shall we begin?")
@@ -47,12 +50,12 @@ if [ $awser = "True" ]; then
 
     disks=$(get_disks)
     install_disk=$(menu_box "Disks" "Select which drive to install Arch Linux." "True" ${disks[@]})
-    should_swap=$(yes_no_box "Swap" "Would you like to create a 2G Swap partition?")
+    should_swap=$(yes_no_box "Swap" "Would you like to create a Swap partition?")
 
-    should_encrypt="TODO" #$(yes_no_box "Disk encryption" "Would you like to encrypt your new installation?")
-    #if [ $should_encrypt = "True" ]; then
-    #    encrypt_password=$(get_password "Encryption")
-    #fi
+    should_encrypt=$(yes_no_box "Disk encryption" "Would you like to encrypt your new installation?")
+    if [ $should_encrypt = "True" ]; then
+        encrypt_password=$(get_password "Encryption")
+    fi
 
     # ==================== Users ====================
 
@@ -83,7 +86,7 @@ Let's do it?")
 
     mkdir /mnt/post-chroot-temp/
     cp /root/monarchy-installer/post-chroot-minimal.sh /mnt/post-chroot-temp/
-    arch-chroot /mnt /usr/bin/bash /post-chroot-temp/post-chroot-minimal.sh $timezone $locale_select $pc_name $password $user_name $keymap_select
+    arch-chroot /mnt /usr/bin/bash /post-chroot-temp/post-chroot-minimal.sh $timezone $locale_select $pc_name $password $user_name $keymap_select $should_encrypt
 
     if [ $install_type = "Complete" ]; then
         cp /root/monarchy-installer/post-chroot-complete.sh /mnt/post-chroot-temp/
