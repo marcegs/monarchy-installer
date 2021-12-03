@@ -11,25 +11,25 @@ function disk_partition() {
 
     if [ $should_swap = "True" ]; then
         (
-            echo g                # new GPT partition table
-            echo n                # new partition
-            echo                  # default number
-            echo                  # default start
-            echo "+$swap_size''M" # 500m
-            echo t                # set type
-            echo 1                # EFI file system
-            echo n                # new partition
-            echo                  # default number
-            echo                  # default start
-            echo +2G              # 2g
-            echo t                # set type
-            echo 2                # partition number 2
-            echo 19               # linux swap
-            echo n                # new partition
-            echo                  # default number
-            echo                  # default start
-            echo                  # all available space
-            echo w                # write changes to disk
+            echo g              # new GPT partition table
+            echo n              # new partition
+            echo                # default number
+            echo                # default start
+            echo "+$swap_size"M # 500m
+            echo t              # set type
+            echo 1              # EFI file system
+            echo n              # new partition
+            echo                # default number
+            echo                # default start
+            echo +2G            # 2g
+            echo t              # set type
+            echo 2              # partition number 2
+            echo 19             # linux swap
+            echo n              # new partition
+            echo                # default number
+            echo                # default start
+            echo                # all available space
+            echo w              # write changes to disk
         ) | fdisk "/dev/$install_disk"
     else
         (
@@ -56,14 +56,18 @@ function format_partition() {
         mkswap "/dev/$install_disk"2
         swapon "/dev/$install_disk"2
         sdx="3"
-        # mkfs.btrfs -L root "/dev/$install_disk"3 -f
+        # mkfs.btrfs -L root "/dev/$install_disk$sdx" -f
         # else
         # mkfs.btrfs -L root "/dev/$install_disk"2 -f
+    else
+        sdx="2"
     fi
     if [ $should_encrypt = "True" ]; then
         cryptsetup luksFormat --cipher aes-xts-plain64 --key-size 256 --hash sha256 --use-random "/dev/$install_disk$sdx"
         cryptsetup luksOpen "/dev/$install_disk$sdx" cryptroot
         mkfs.btrfs -L root /dev/mapper/cryptroot -f
+    else
+        mkfs.btrfs -L root "/dev/$install_disk$sdx" -f
     fi
 }
 

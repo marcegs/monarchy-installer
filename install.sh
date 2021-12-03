@@ -7,6 +7,7 @@ source lib/info-helper.sh
 message_box "Welcome!" "Welcome to monarchy-installer! Yet another arch installer.
 
 WARNING This script it is still an WIP. Use it at your own risk!
+
 WARNING 2 UEFI ONLY! (for now)
 
 Any and all criticisms are welcome!
