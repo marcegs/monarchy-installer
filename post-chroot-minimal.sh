@@ -38,7 +38,7 @@ function configure_bootloader() {
     uuid=$(blkid -s UUID -o value /dev/sda3)
     if [ $1 = "True" ]; then
      sed 's/#GRUB_ENABLE_CRYPTODISK=y/GRUB_ENABLE_CRYPTODISK=y/g' -i /etc/default/grub
-     sed "s/GRUB_CMDLINE_LINUX_DEFAULT=\"loglevel=3 quiet\"/GRUB_CMDLINE_LINUX_DEFAULT=\"loglevel=3 quiet cryptdevice=\/dev\/disk\/by-uuid\/$uuid:cryptroot/g" -i /etc/default/grub
+     sed "s/GRUB_CMDLINE_LINUX_DEFAULT=\"loglevel=3 quiet\"/GRUB_CMDLINE_LINUX_DEFAULT=\"loglevel=3 quiet cryptdevice=\/dev\/disk\/by-uuid\/$uuid:cryptroot\"/g" -i /etc/default/grub
     fi
 
     grub-install --target=x86_64-efi --efi-directory=/boot --recheck --bootloader-id=GRUB $2
