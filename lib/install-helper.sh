@@ -59,8 +59,12 @@ function format_partition() {
     fi
     if [ $should_encrypt = "True" ]; then
 
-        echo "$encrypt_password" | cryptsetup luksFormat --cipher aes-xts-plain64 --key-size 256 --hash sha256 --use-random "/dev/$install_disk$sdx" -d -
-        echo "$encrypt_password" | cryptsetup luksOpen "/dev/$install_disk$sdx" cryptroot -d -
+        # echo "$encrypt_password" | cryptsetup luksFormat --cipher aes-xts-plain64 --key-size 256 --hash sha256 --use-random "/dev/$install_disk$sdx" -d -
+        # echo "$encrypt_password" | cryptsetup luksOpen "/dev/$install_disk$sdx" cryptroot -d - 
+        # TODO This is not working, make it work!
+        
+        cryptsetup luksFormat --cipher aes-xts-plain64 --key-size 256 --hash sha256 --use-random "/dev/$install_disk$sdx"
+        cryptsetup luksOpen "/dev/$install_disk$sdx" cryptroot
         
         mkfs.btrfs -L root /dev/mapper/cryptroot -f
     else

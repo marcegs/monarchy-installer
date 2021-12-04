@@ -20,11 +20,11 @@ awser=$(yes_no_box "Monarchy" "Shall we begin?")
 if [ $awser = "True" ]; then
 
     # ==================== Type ====================
-#    message_box "Installation Type" "Monarchy-installer has 2 installation type, minimal (wip, missing encryption) and complete (wip).
-#
-#Minimal: Minimal arch install and some essential utilities.
-#Complete: Cinnamon desktop environment and a lot, a lot more :)
-#"
+    #    message_box "Installation Type" "Monarchy-installer has 2 installation type, minimal (wip, missing encryption) and complete (wip).
+    #
+    #Minimal: Minimal arch install and some essential utilities.
+    #Complete: Cinnamon desktop environment and a lot, a lot more :)
+    #"
 
     types=("Minimal" "Complete")
     install_type= "TODO" #$(menu_box "Installation Type" "Which one would you like to install?" "" ${types[@]})
@@ -54,9 +54,9 @@ if [ $awser = "True" ]; then
     should_swap=$(yes_no_box "Swap" "Would you like to create a Swap partition?")
 
     should_encrypt=$(yes_no_box "Disk encryption" "Would you like to encrypt your new installation?")
-    if [ $should_encrypt = "True" ]; then
-        encrypt_password=$(get_password "Encryption")
-    fi
+    # if [ $should_encrypt = "True" ]; then
+    # encrypt_password=$(get_password "Encryption")
+    # fi
 
     # ==================== Users ====================
 
