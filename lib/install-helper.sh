@@ -56,15 +56,12 @@ function format_partition() {
         mkswap "/dev/$install_disk"2
         swapon "/dev/$install_disk"2
         sdx="3"
-        # mkfs.btrfs -L root "/dev/$install_disk$sdx" -f
-        # else
-        # mkfs.btrfs -L root "/dev/$install_disk"2 -f
-    else
-        sdx="2"
     fi
     if [ $should_encrypt = "True" ]; then
-        cryptsetup luksFormat --cipher aes-xts-plain64 --key-size 256 --hash sha256 --use-random "/dev/$install_disk$sdx"
-        cryptsetup luksOpen "/dev/$install_disk$sdx" cryptroot
+
+        echo "$encrypt_password" | cryptsetup luksFormat --cipher aes-xts-plain64 --key-size 256 --hash sha256 --use-random "/dev/$install_disk$sdx" -d -
+        echo "$encrypt_password" | cryptsetup luksOpen "/dev/$install_disk$sdx" cryptroot -d -
+        
         mkfs.btrfs -L root /dev/mapper/cryptroot -f
     else
         mkfs.btrfs -L root "/dev/$install_disk$sdx" -f
