@@ -84,6 +84,7 @@ function mount_partition() {
     fi
 
     mount -o compress=lzo $temp_install_disk /mnt
+
     cd /mnt
     btrfs su cr @
     btrfs su cr @tmp
@@ -95,8 +96,8 @@ function mount_partition() {
     cd /
     umount /mnt
     mount -o relatime,space_cache=v2,ssd,compress=lzo,subvol=@ $temp_install_disk /mnt
-    mkdir -p /mnt/{boot/efi,home,var/log,var/cache/pacman/pkg,btrfs,tmp}
-    mount "/dev/$install_disk"1 /mnt/boot/efi
+    mkdir -p /mnt/{boot,home,var/log,var/cache/pacman/pkg,btrfs,tmp}
+    mount "/dev/$install_disk"1 /mnt/boot
     mount -o relatime,space_cache=v2,ssd,compress=lzo,subvol=@home $temp_install_disk /mnt/home
     mount -o relatime,space_cache=v2,ssd,compress=lzo,subvol=@log $temp_install_disk /mnt/var/log
     mount -o relatime,space_cache=v2,ssd,compress=lzo,subvol=@pkg $temp_install_disk /mnt/var/cache/pacman/pkg/

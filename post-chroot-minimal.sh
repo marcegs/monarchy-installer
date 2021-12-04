@@ -21,11 +21,9 @@ function configure_network() {
 }
 function create_initramfs() {
     if [ $1 = "True" ]; then
-        sed -i "s/block filesystems/block btrfs encrypt filesystems/g" /etc/mkinitcpio.conf
-    else
-        sed -i "s/block filesystems/block btrfs filesystems/g" /etc/mkinitcpio.conf
+        sed -i "s/block filesystems/block encrypt filesystems/g" /etc/mkinitcpio.conf
+        mkinitcpio -p linux
     fi
-    mkinitcpio -p linux
 }
 function set_root_password() {
     echo root:$1 | chpasswd # change root password
@@ -40,10 +38,10 @@ function configure_bootloader() {
     uuid=$(blkid -s UUID -o value /dev/sda3)
     if [ $1 = "True" ]; then
      sed 's/#GRUB_ENABLE_CRYPTODISK=y/GRUB_ENABLE_CRYPTODISK=y/g' -i /etc/default/grub
-     sed "s/GRUB_CMDLINE_LINUX_DEFAULT=\"loglevel=3 quiet\"/GRUB_CMDLINE_LINUX_DEFAULT=\"loglevel=3 quiet cryptdevice=UUID=$uuid:cryptroot root=\/dev\/mapper\/cryptroot\"/g" -i /etc/default/grub
+     sed "s/GRUB_CMDLINE_LINUX_DEFAULT=\"loglevel=3 quiet\"/GRUB_CMDLINE_LINUX_DEFAULT=\"loglevel=3 quiet cryptdevice=/dev/disk/by-uuid/$uuid:cryptroot/g" -i /etc/default/grub
     fi
 
-    grub-install
+    grub-install --target=x86_64-efi --efi-directory=/boot --recheck --bootloader-id=GRUB $2
     grub-mkconfig -o /boot/grub/grub.cfg
 }
 
@@ -82,11 +80,12 @@ function configure_snapper() {
 # 5 - username
 # 6 - keymap_select
 # 7 - should_encrypt
+# 8 - install_disk
 
 set_timesone $1
 set_localization $2 $6
 configure_network $3
 create_initramfs $7
 set_root_password $4 $5
-configure_bootloader $7
+configure_bootloader $7 $8
 configure_snapper
