@@ -75,9 +75,9 @@ function format_partition() {
 function mount_partition() {
     temp_install_disk=""
     if [ $should_swap = "True" ]; then
-        temp_install_disk="/dev/$install_disk''3"
+        temp_install_disk="/dev/$install_disk"3
     else
-        temp_install_disk="/dev/$install_disk''2"
+        temp_install_disk="/dev/$install_disk"2
     fi
 
     if [ $should_encrypt = "True" ]; then
