@@ -15,13 +15,13 @@ function disk_partition() {
             echo n              # new partition
             echo                # default number
             echo                # default start
-            echo "+$swap_size"M # 500m
+            echo +500M          # 500m
             echo t              # set type
             echo 1              # EFI file system
             echo n              # new partition
             echo                # default number
             echo                # default start
-            echo +2G            # 2g
+            echo "+$swap_size"M # swap same size as memory
             echo t              # set type
             echo 2              # partition number 2
             echo 19             # linux swap
@@ -53,19 +53,23 @@ function format_partition() {
     mkfs.fat -F 32 "/dev/$install_disk"1
     sdx="2"
     if [ $should_swap = "True" ]; then
-        mkswap "/dev/$install_disk"2
-        swapon "/dev/$install_disk"2
-        sdx="3"
+        if [ $should_encrypt = "True" ]; then
+            echo "????????????????????????"
+        else
+            mkswap "/dev/$install_disk"2
+            swapon "/dev/$install_disk"2
+            sdx="3"
+        fi
     fi
     if [ $should_encrypt = "True" ]; then
 
         # echo "$encrypt_password" | cryptsetup luksFormat --cipher aes-xts-plain64 --key-size 256 --hash sha256 --use-random "/dev/$install_disk$sdx" -d -
-        # echo "$encrypt_password" | cryptsetup luksOpen "/dev/$install_disk$sdx" cryptroot -d - 
+        # echo "$encrypt_password" | cryptsetup luksOpen "/dev/$install_disk$sdx" cryptroot -d -
         # TODO This is not working, make it work!
-        
+
         cryptsetup luksFormat --cipher aes-xts-plain64 --key-size 256 --hash sha256 --use-random "/dev/$install_disk$sdx"
         cryptsetup luksOpen "/dev/$install_disk$sdx" cryptroot
-        
+
         mkfs.btrfs -L root /dev/mapper/cryptroot -f
     else
         mkfs.btrfs -L root "/dev/$install_disk$sdx" -f
