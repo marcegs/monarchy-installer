@@ -28,14 +28,13 @@ function menu_box() {
 
     whiptail_list=""
     options=("$@")
-
     #this is bad but it works for now
     if [ "$has_tag_item" = "True" ]; then
-        for t in "${options[@]}"; do
+        for t in ${options[@]}; do
             whiptail_list+=$t$'\n'
         done
     else
-        for t in "${options[@]}"; do
+        for t in ${options[@]}; do
             whiptail_list+=$t$'\n'
             whiptail_list+=$t$'\n'
         done

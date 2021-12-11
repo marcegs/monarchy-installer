@@ -64,7 +64,7 @@ function configure_snapper() {
 
     # this could probably be a lot better ;-;
     uuid_no_spli=$(grep /home /etc/fstab | awk '{print $1}')
-    uuid_split=("${uuid_no_spli//=/ }")
+    uuid_split=(${uuid_no_spli//=/ })
     uuid=${uuid_split[1]}
 
     echo "UUID=$uuid    /.snapshots    btrfs    rw,relatime,compress=lzo,ssd,space_cache=v2,subvol=@snapshots 0 0" >>/etc/fstab

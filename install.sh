@@ -4,75 +4,94 @@ source lib/menu-helper.sh
 source lib/install-helper.sh
 source lib/info-helper.sh
 
-message_box "WARNING" "This script it is still an WIP. Use it at your own risk!"
+install_type="Minimal"
+timezone=""
+locale_select=""
+keymap_select=""
+install_disk=""
+should_swap="True"
+should_encrypt="False"
+user_name=""
+pc_name="monarchy"
+password=""
 
-message_box "Welcome!" "Welcome to monarchy-installer!
+function SelectType() {
+    types=("Minimal" "Complete(coming-soon!)")
+    install_type=$(menu_box "Installation Type" "Which one would you like to install?" "" ${types[@]})
+    echo "$install_type"
+}
 
-Any and all criticisms are welcome!
-
-If you mistyped or selected the wrong option, select 'no' on the 'Final Warning' box and start from the beginning. This will be fixed in the future.
-"
-
-awser=$(yes_no_box "Monarchy" "Shall we begin?")
-
-if [ "$awser" = "True" ]; then
-
-    # ==================== Type ====================
-    #    message_box "Installation Type" "Monarchy-installer has 2 installation type, minimal (wip, missing encryption) and complete (wip).
-    #
-    #Minimal: Minimal arch install and some essential utilities.
-    #Complete: Cinnamon desktop environment and a lot, a lot more :)
-    #"
-
-    #types=("Minimal" "Complete")
-    install_type="TODO" #$(menu_box "Installation Type" "Which one would you like to install?" "" ${types[@]})
-
-    # ==================== Location ====================
-
+function SelectLocale() {
     locale_list=$(get_locale)
     locale_select=$(menu_box "Locale" "Select your locale (language)" "" "${locale_list[@]}")
+    echo "$locale_select"
+}
 
+function SelectTimezone() {
     timezone_select=""
     timezone="/usr/share/zoneinfo"
     while [ -d $timezone ]; do
         zone_list=$(ls "$timezone")
-        timezone_select=$(menu_box "Zoneinfo" "Select your timezone" "" "${zone_list[@]}")
+        timezone_select=$(menu_box "Time zone" "Select your time zone" "" "${zone_list[@]}")
+        if [ "$timezone_select" = "" ]; then
+            echo ""
+            return
+        fi
         timezone="$timezone/$timezone_select"
     done
 
-    # ==================== Keyboard ====================
+    echo "$timezone"
+}
+
+function SelectKeyboard() {
 
     keymap_list=$(get_keymaps)
-    keymap_select=$(menu_box "Keyboard" "Select your keyboard layout" "" "${keymap_list[@]}")
+    keymap_select=$(menu_box "Keyboard Layout" "Select your keyboard layout" "" "${keymap_list[@]}")
+    localectl set-keymap "$keymap_select"
+    echo "$keymap_select"
+}
 
-    # ==================== Partitions ====================
-
+function SelectInstallLocation() {
     disks=$(get_disks)
     install_disk=$(menu_box "Disks" "Select which drive to install Arch Linux." "True" "${disks[@]}")
-    should_swap=$(yes_no_box "Swap" "Would you like to create a Swap partition?")
+    echo "$install_disk"
+}
 
+function SelectSwap() {
+    should_swap=$(yes_no_box "Swap" "Would you like to create a Swap partition?")
+    echo "$should_swap"
+}
+
+function SelectEncryption() {
     should_encrypt=$(yes_no_box "Disk encryption" "Would you like to encrypt your new installation?
 WARNING: Swap encryption is still missing")
     # if [ $should_encrypt = "True" ]; then
     # encrypt_password=$(get_password "Encryption")
     # fi
+    echo "$should_encrypt"
+}
 
-    # ==================== Users ====================
+function SelectEncryptionPassword() {
+    encrypt_password=$(get_password "Encryption")
+    echo "$encrypt_password"
+}
 
+function SelectUser() {
     user_name=$(input_box "User Name" "What name do you want to give to your user?")
-    pc_name=$(input_box "Computer Name" "What name should be given to this computer?")
+    echo "$user_name"
+}
+
+function SelectPassword() {
     password=$(get_password "User")
+    echo "$password"
+}
 
-    # ==================== Install ====================
+function SelectHostName() {
+    pc_name=$(input_box "Computer Name" "What name should be given to this computer?")
+    echo "$pc_name"
+}
 
-    doit=$(yes_no_box "Final Warning!" "You are about to write changes to the disk.
-THIS ACTION CANNOT BE UNDONE!
-Let's do it?")
-    if [ "$doit" != "True" ]; then
-        echo ":("
-        exit
-    fi
-
+function Install() {
     # == 1 ==
 
     update_system_clock
@@ -97,9 +116,90 @@ Let's do it?")
     umount -R /mnt
 
     message_box "Done!" "Installation finished! You can now reboot and login into your new system!"
+}
 
-    # ==================== Finish ====================
+function MainMenu() {
+    
+    whiptail --title "Monarchy installer" --menu --cancel-button "Exit" --default-item "$1" --ok-button "Select" "" 20 80 12 \
+        "Installation Type" "    $install_type" \
+        "Time zone" "    $timezone" \
+        "Locale" "    $locale_select" \
+        "Keyboard layout" "    $keymap_select" \
+        "Install location" "    $install_disk" \
+        "Swap" "    $should_swap" \
+        "Encryption" "    $should_encrypt" \
+        "User" "    $user_name" \
+        "Host name" "    $pc_name" \
+        " " " " \
+        "Let's do it!" "    Begin installation" 3>&2 2>&1 1>&3
+}
 
+select=""
+
+message_box "WARNING" "This script it is still an WIP. Use it at your own risk!
+UEFI ONLY!"
+awser=$(yes_no_box "Monarchy Installer" "Shall we begin?")
+
+if [ "$awser" = "True" ]; then
+    while [ "$select" != "Let's do it!" ]; do
+        select=$(MainMenu "$select")
+        if [ "$select" = "" ]; then
+            echo ":("
+            exit
+        fi
+
+        case $select in
+
+        "Installation Type")
+            install_type=$(SelectType)
+            ;;
+
+        "Time zone")
+            timezone=$(SelectTimezone)
+            ;;
+        "Locale")
+            locale_select=$(SelectLocale)
+            ;;
+
+        "Keyboard layout")
+            keymap_select=$(SelectKeyboard)
+            ;;
+        "Install location")
+            install_disk=$(SelectInstallLocation)
+            ;;
+        "Swap")
+            should_swap=$(SelectSwap)
+            ;;
+        "Encryption")
+            should_encrypt=$(SelectEncryption)
+            ;;
+        "User")
+            user_name=$(SelectUser)
+            if [ "$user_name" != "" ];then
+                password=$(SelectPassword)
+            fi
+            ;;
+        "Host name")
+            pc_name=$(SelectHostName)
+            ;;
+
+        "Let's do it!")
+            doit=$(yes_no_box "Final Warning!" "You are about to write changes to the disk.
+THIS ACTION CANNOT BE UNDONE!
+Let's do it?")
+            if [ "$doit" != "True" ]; then
+                select="nah m8 im not done!"
+            fi
+            ;;
+
+        *)
+            true
+            ;;
+        esac
+
+    done
+
+    Install
 else
     echo ":("
 fi
