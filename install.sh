@@ -4,19 +4,19 @@ source lib/menu-helper.sh
 source lib/install-helper.sh
 source lib/info-helper.sh
 
-install_type=""
+install_type="Minimal"
 timezone=""
 locale_select=""
 keymap_select=""
 install_disk=""
-should_swap=""
-should_encrypt=""
+should_swap="True"
+should_encrypt="False"
 user_name=""
-pc_name=""
+pc_name="monarchy"
 password=""
 
 function SelectType() {
-    types=("Minimal" "Complete")
+    types=("Minimal" "Complete(coming-soon!)")
     install_type=$(menu_box "Installation Type" "Which one would you like to install?" "" ${types[@]})
     echo "$install_type"
 }
@@ -33,6 +33,10 @@ function SelectTimezone() {
     while [ -d $timezone ]; do
         zone_list=$(ls "$timezone")
         timezone_select=$(menu_box "Time zone" "Select your time zone" "" "${zone_list[@]}")
+        if [ "$timezone_select" = "" ]; then
+            echo ""
+            return
+        fi
         timezone="$timezone/$timezone_select"
     done
 
@@ -48,7 +52,6 @@ function SelectKeyboard() {
 }
 
 function SelectInstallLocation() {
-
     disks=$(get_disks)
     install_disk=$(menu_box "Disks" "Select which drive to install Arch Linux." "True" "${disks[@]}")
     echo "$install_disk"
@@ -133,7 +136,8 @@ function MainMenu() {
 
 select=""
 
-message_box "WARNING" "This script it is still an WIP. Use it at your own risk!"
+message_box "WARNING" "This script it is still an WIP. Use it at your own risk!
+UEFI ONLY!"
 awser=$(yes_no_box "Monarchy Installer" "Shall we begin?")
 
 if [ "$awser" = "True" ]; then
@@ -171,7 +175,9 @@ if [ "$awser" = "True" ]; then
             ;;
         "User")
             user_name=$(SelectUser)
-            password=$(SelectPassword)
+            if [ "$user_name" != "" ];then
+                password=$(SelectPassword)
+            fi
             ;;
         "Host name")
             pc_name=$(SelectHostName)
