@@ -49,6 +49,7 @@ function SelectKeyboard() {
 
     keymap_list=$(get_keymaps)
     keymap_select=$(menu_box "Keyboard Layout" "Select your keyboard layout" "" "${keymap_list[@]}")
+    localectl set-keymap "$keymap_select"
     echo "$keymap_select"
 }
 
