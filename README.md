@@ -23,7 +23,7 @@ wow now that's a lot of features!
 - [x] Optional disk encryption
 
 Note: Swap will not be encrypted, still working on it
-- [ ] Options between complete and minimal install
+- [x] Options between complete and minimal install (useless option atm c:)
 - [ ] Complete install
 - [ ] Everything else
 
