@@ -16,12 +16,6 @@ pc_name=""
 password=""
 
 function SelectType() {
-    message_box "Installation Type" "Monarchy-installer has 2 installation type, minimal (wip, missing encryption) and complete (wip).
-#
-#Minimal: Minimal arch install and some essential utilities.
-#Complete: Cinnamon desktop environment and a lot, a lot more :)
-#"
-
     types=("Minimal" "Complete")
     install_type=$(menu_box "Installation Type" "Which one would you like to install?" "" ${types[@]})
     echo "$install_type"
