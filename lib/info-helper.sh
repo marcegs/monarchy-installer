@@ -35,5 +35,5 @@ function get_password() {
         password=$(password_box "$pass_title" "$pass_text")
         password_confirm=$(password_box "$repeat_pass_title" "$repeat_pass_text")
     done
-    echo $password
+    echo "$password"
 }

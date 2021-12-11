@@ -9,7 +9,7 @@ function disk_partition() {
 
     swap_size=$(free -m | grep Mem: | awk '{print $2}')
 
-    if [ $should_swap = "True" ]; then
+    if [ "$should_swap" = "True" ]; then
         (
             echo g              # new GPT partition table
             echo n              # new partition
@@ -52,16 +52,16 @@ function disk_partition() {
 function format_partition() {
     mkfs.fat -F 32 "/dev/$install_disk"1
     sdx="2"
-    if [ $should_swap = "True" ]; then
-        if [ $should_encrypt = "True" ]; then
-            echo "????????????????????????"
-        else
-            mkswap "/dev/$install_disk"2
-            swapon "/dev/$install_disk"2
-            sdx="3"
-        fi
+    if [ "$should_swap" = "True" ]; then
+        #if [ "$should_encrypt" = "True" ]; then
+        #    echo "????????????????????????"
+        #else
+        mkswap "/dev/$install_disk"2
+        swapon "/dev/$install_disk"2
+        sdx="3"
+        #fi
     fi
-    if [ $should_encrypt = "True" ]; then
+    if [ "$should_encrypt" = "True" ]; then
 
         # echo "$encrypt_password" | cryptsetup luksFormat --cipher aes-xts-plain64 --key-size 256 --hash sha256 --use-random "/dev/$install_disk$sdx" -d -
         # echo "$encrypt_password" | cryptsetup luksOpen "/dev/$install_disk$sdx" cryptroot -d -
@@ -78,13 +78,13 @@ function format_partition() {
 
 function mount_partition() {
     temp_install_disk=""
-    if [ $should_swap = "True" ]; then
+    if [ "$should_swap" = "True" ]; then
         temp_install_disk="/dev/$install_disk"3
     else
         temp_install_disk="/dev/$install_disk"2
     fi
 
-    if [ $should_encrypt = "True" ]; then
+    if [ "$should_encrypt" = "True" ]; then
         temp_install_disk="/dev/mapper/cryptroot"
     fi
 

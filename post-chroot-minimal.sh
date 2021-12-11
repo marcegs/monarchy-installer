@@ -23,17 +23,17 @@ function configure_network() {
 }
 
 function create_initramfs() {
-    if [ $1 = "True" ]; then
+    if [ "$1" = "True" ]; then
         sed -i "s/block filesystems/block encrypt filesystems/g" /etc/mkinitcpio.conf
         mkinitcpio -p linux
     fi
 }
 
 function set_root_password() {
-    echo root:$1 | chpasswd # change root password
+    echo root:"$1" | chpasswd # change root password
 
-    useradd -m -G wheel $2 # wheel group for sudo
-    echo $2:$1 | chpasswd  # change user password
+    useradd -m -G wheel "$2" # wheel group for sudo
+    echo "$2":"$1" | chpasswd  # change user password
 
     sed -i 's/# %wheel ALL=(ALL) ALL/%wheel ALL=(ALL) ALL/g' /etc/sudoers # make so users of the wheel group can run sudo
 }
@@ -41,18 +41,18 @@ function set_root_password() {
 function configure_bootloader() {
     pacman --needed -S grub efibootmgr --noconfirm --needed
     sdx="2"
-    if [ $3 = "True" ]; then
+    if [ "$3" = "True" ]; then
         sdx="3"
     fi
 
-    uuid=$(blkid -s UUID -o value /dev/$2$sdx)
+    uuid=$(blkid -s UUID -o value /dev/"$2"$sdx)
     
-    if [ $1 = "True" ]; then
+    if [ "$1" = "True" ]; then
         sed 's/#GRUB_ENABLE_CRYPTODISK=y/GRUB_ENABLE_CRYPTODISK=y/g' -i /etc/default/grub
         sed "s/GRUB_CMDLINE_LINUX_DEFAULT=\"loglevel=3 quiet\"/GRUB_CMDLINE_LINUX_DEFAULT=\"loglevel=3 quiet cryptdevice=\/dev\/disk\/by-uuid\/$uuid:cryptroot\"/g" -i /etc/default/grub
     fi
 
-    grub-install --target=x86_64-efi --efi-directory=/boot --recheck --bootloader-id=GRUB $2
+    grub-install --target=x86_64-efi --efi-directory=/boot --recheck --bootloader-id=GRUB "$2"
     grub-mkconfig -o /boot/grub/grub.cfg
 }
 
@@ -63,8 +63,8 @@ function configure_snapper() {
     mkdir /.snapshots
 
     # this could probably be a lot better ;-;
-    uuid_no_spli=$(cat /etc/fstab | grep /home | awk '{print $1}')
-    uuid_split=(${uuid_no_spli//=/ })
+    uuid_no_spli=$(grep /home /etc/fstab | awk '{print $1}')
+    uuid_split=("${uuid_no_spli//=/ }")
     uuid=${uuid_split[1]}
 
     echo "UUID=$uuid    /.snapshots    btrfs    rw,relatime,compress=lzo,ssd,space_cache=v2,subvol=@snapshots 0 0" >>/etc/fstab
@@ -94,10 +94,10 @@ function configure_snapper() {
 # 8 - install_disk
 # 9 - should_swap
 
-set_timesone $1
-set_localization $2 $6
-configure_network $3
-create_initramfs $7
-set_root_password $4 $5
-configure_bootloader $7 $8 $9
+set_timesone "$1"
+set_localization "$2" "$6"
+configure_network "$3"
+create_initramfs "$7"
+set_root_password "$4" "$5"
+configure_bootloader "$7" "$8" "$9"
 configure_snapper
