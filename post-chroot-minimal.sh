@@ -4,12 +4,14 @@ function set_timesone() {
     ln -sf $1 /etc/localtime
     hwclock --systohc
 }
+
 function set_localization() {
     sed -i "s/#$1/$1/g" /etc/locale.gen
     locale-gen
     echo "LANG=$1" >/etc/locale.conf
     echo "KEYMAP=$2" >/etc/vconsole.conf
 }
+
 function configure_network() {
     pacman -S networkmanager --noconfirm --needed
 
@@ -19,21 +21,38 @@ function configure_network() {
 127.0.1.1        $1" >/etc/hosts
     systemctl enable NetworkManager
 }
-function create_initramfs() {
-    sed -i "s/block filesystems/block btrfs filesystems/g" /etc/mkinitcpio.conf
-    mkinitcpio -p linux
-}
-function set_root_password() {
-    echo root:$1 | chpasswd # change root password
 
-    useradd -m -G wheel $2 # wheel group for sudo
-    echo $2:$1 | chpasswd  # change user password
+function create_initramfs() {
+    if [ "$1" = "True" ]; then
+        sed -i "s/block filesystems/block encrypt filesystems/g" /etc/mkinitcpio.conf
+        mkinitcpio -p linux
+    fi
+}
+
+function set_root_password() {
+    echo root:"$1" | chpasswd # change root password
+
+    useradd -m -G wheel "$2" # wheel group for sudo
+    echo "$2":"$1" | chpasswd  # change user password
 
     sed -i 's/# %wheel ALL=(ALL) ALL/%wheel ALL=(ALL) ALL/g' /etc/sudoers # make so users of the wheel group can run sudo
 }
+
 function configure_bootloader() {
     pacman --needed -S grub efibootmgr --noconfirm --needed
-    grub-install
+    sdx="2"
+    if [ "$3" = "True" ]; then
+        sdx="3"
+    fi
+
+    uuid=$(blkid -s UUID -o value /dev/"$2"$sdx)
+    
+    if [ "$1" = "True" ]; then
+        sed 's/#GRUB_ENABLE_CRYPTODISK=y/GRUB_ENABLE_CRYPTODISK=y/g' -i /etc/default/grub
+        sed "s/GRUB_CMDLINE_LINUX_DEFAULT=\"loglevel=3 quiet\"/GRUB_CMDLINE_LINUX_DEFAULT=\"loglevel=3 quiet cryptdevice=\/dev\/disk\/by-uuid\/$uuid:cryptroot\"/g" -i /etc/default/grub
+    fi
+
+    grub-install --target=x86_64-efi --efi-directory=/boot --recheck --bootloader-id=GRUB "$2"
     grub-mkconfig -o /boot/grub/grub.cfg
 }
 
@@ -44,11 +63,11 @@ function configure_snapper() {
     mkdir /.snapshots
 
     # this could probably be a lot better ;-;
-    uuid_no_spli=$(cat /etc/fstab | grep /home | awk '{print $1}')
-    uuid_split=(${uuid_no_spli//=/ })
+    uuid_no_spli=$(grep /home /etc/fstab | awk '{print $1}')
+    uuid_split=("${uuid_no_spli//=/ }")
     uuid=${uuid_split[1]}
 
-    echo "UUID=$uuid    /.snapshots    btrfs    rw,relatime,compress=lzo,ssd,space_cache=v2,subvol=@snapshots 0 0" >> /etc/fstab
+    echo "UUID=$uuid    /.snapshots    btrfs    rw,relatime,compress=lzo,ssd,space_cache=v2,subvol=@snapshots 0 0" >>/etc/fstab
     mount /.snapshots
 
     systemctl enable grub-btrfs.path
@@ -56,8 +75,8 @@ function configure_snapper() {
     sed -i 's/GRUB_DISABLE_RECOVERY=true/GRUB_DISABLE_RECOVERY=false/g' /etc/default/grub
 
     pacman -S snap-pac --noconfirm --needed
-    pacman -S cronie --noconfirm --needed 
-    
+    pacman -S cronie --noconfirm --needed
+
     systemctl enable snapper-boot.timer
     systemctl enable snapper-cleanup.timer
     systemctl enable cronie.service
@@ -71,11 +90,14 @@ function configure_snapper() {
 # 4 - password
 # 5 - username
 # 6 - keymap_select
+# 7 - should_encrypt
+# 8 - install_disk
+# 9 - should_swap
 
-set_timesone $1
-set_localization $2 $6
-configure_network $3
-create_initramfs
-set_root_password $4 $5
-configure_bootloader
+set_timesone "$1"
+set_localization "$2" "$6"
+configure_network "$3"
+create_initramfs "$7"
+set_root_password "$4" "$5"
+configure_bootloader "$7" "$8" "$9"
 configure_snapper

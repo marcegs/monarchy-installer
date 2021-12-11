@@ -2,6 +2,8 @@
 
 **WARNING** This script it is still an WIP. Use it at your own risk!
 
+**WARNING 2** UEFI ONLY! (for now)
+
 Any and all criticisms are welcome!
 
 ## About
@@ -18,7 +20,9 @@ wow now that's a lot of features!
 
 ### Planned Features
 
-- [ ] Optional full disk encryption
+- [x] Optional disk encryption
+
+Note: Swap will not be encrypted, still working on it
 - [ ] Options between complete and minimal install
 - [ ] Complete install
 - [ ] Everything else
