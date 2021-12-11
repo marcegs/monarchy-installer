@@ -111,7 +111,6 @@ function mount_partition() {
     unset temp_install_disk
 }
 
-# $keymap_select
 function install_base() {
     pacstrap /mnt base linux linux-firmware linux-headers base-devel git nano sudo man-db man-pages btrfs-progs bash-completion
 }
