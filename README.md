@@ -8,21 +8,20 @@ Any and all criticisms are welcome!
 
 ## About
 
-Monarchy Installer is a personal project created with the intention of learning bash scripting.
-
-This script is for my personal setup, and as such, it is not intended for those who wish to customize the install process. For instance, if you don't want to use the BTRFS file system, this script won't give you the option to change it, at least for now.
+Monarchy installer is an Arch Linux installer for those who just wanna get it over with.
 
 ## Features
 
-- Minimal arch install with BTRFS file system and snapper already configured
-
-wow now that's a lot of features!
+- Minimal arch install with BTRFS file system and snapper
+- Optional disk encryption
+- Options between complete and minimal install (useless option atm c:)
 
 ### Planned Features
 
-- [x] Optional disk encryption
-- [x] Options between complete and minimal install (useless option atm c:)
-- [ ] Complete install
+- [ ] Prevent user from leaving a field blank or an invalid input
+- [ ] Choose between ext4 and btrfs file systems
+- [ ] Give the option to set a custom swap size (currently it is the amount of ram on the system)
+- [ ] Complete install 
 - [ ] Everything else
 
 ## Usage
