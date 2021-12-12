@@ -21,8 +21,6 @@ wow now that's a lot of features!
 ### Planned Features
 
 - [x] Optional disk encryption
-
-Note: Swap will not be encrypted, still working on it
 - [x] Options between complete and minimal install (useless option atm c:)
 - [ ] Complete install
 - [ ] Everything else
