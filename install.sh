@@ -171,9 +171,9 @@ if [ "$awser" = "True" ]; then
             ;;
         "Encryption")
             should_encrypt=$(SelectEncryption)
-            if [ "$should_encrypt" = "True" ]; then
-                encrypt_password=$(SelectEncryptionPassword)
-            fi
+            #if [ "$should_encrypt" = "True" ]; then
+            #    encrypt_password=$(SelectEncryptionPassword)
+            #fi
             ;;
         "User")
             user_name=$(SelectUser)
