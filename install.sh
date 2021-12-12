@@ -119,7 +119,7 @@ function Install() {
 }
 
 function MainMenu() {
-    
+
     whiptail --title "Monarchy installer" --menu --cancel-button "Exit" --default-item "$1" --ok-button "Select" "" 20 80 12 \
         "Installation Type" "    $install_type" \
         "Time zone" "    $timezone" \
@@ -172,10 +172,13 @@ if [ "$awser" = "True" ]; then
             ;;
         "Encryption")
             should_encrypt=$(SelectEncryption)
+            if [ "$should_encrypt" = "True" ]; then
+                encrypt_password=$(SelectEncryptionPassword)
+            fi
             ;;
         "User")
             user_name=$(SelectUser)
-            if [ "$user_name" != "" ];then
+            if [ "$user_name" != "" ]; then
                 password=$(SelectPassword)
             fi
             ;;

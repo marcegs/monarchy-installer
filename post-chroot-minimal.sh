@@ -32,8 +32,8 @@ function create_initramfs() {
 function set_root_password() {
     echo root:"$1" | chpasswd # change root password
 
-    useradd -m -G wheel "$2" # wheel group for sudo
-    echo "$2":"$1" | chpasswd  # change user password
+    useradd -m -G wheel "$2"  # wheel group for sudo
+    echo "$2":"$1" | chpasswd # change user password
 
     sed -i 's/# %wheel ALL=(ALL) ALL/%wheel ALL=(ALL) ALL/g' /etc/sudoers # make so users of the wheel group can run sudo
 }
@@ -46,7 +46,7 @@ function configure_bootloader() {
     fi
 
     uuid=$(blkid -s UUID -o value /dev/"$2"$sdx)
-    
+
     if [ "$1" = "True" ]; then
         sed 's/#GRUB_ENABLE_CRYPTODISK=y/GRUB_ENABLE_CRYPTODISK=y/g' -i /etc/default/grub
         sed "s/GRUB_CMDLINE_LINUX_DEFAULT=\"loglevel=3 quiet\"/GRUB_CMDLINE_LINUX_DEFAULT=\"loglevel=3 quiet cryptdevice=\/dev\/disk\/by-uuid\/$uuid:cryptroot\"/g" -i /etc/default/grub
@@ -84,6 +84,17 @@ function configure_snapper() {
     grub-mkconfig -o /boot/grub/grub.cfg
 }
 
+function encrypt_swap() {
+    swapoff "/dev/$1"2
+    echo "y" | mkfs.ext2 -L cryptswap "/dev/$1"2 1M
+
+    swap_line=$(grep swap /etc/crypttab)
+    sed -i -e "s|$swap_line|swap    LABEL=cryptswap    /dev/urandom    swap,offset=2048,cipher=aes-xts-plain64,size=512|g" /etc/crypttab
+
+    swap_uuid=$(grep swap /etc/fstab | awk '{print $1}')
+    sed -i -e "s|$swap_uuid|/dev/mapper/swap|g" /etc/fstab
+}
+
 # 1 - timesone
 # 2 - locale_select
 # 3 - pc_name
@@ -101,3 +112,6 @@ create_initramfs "$7"
 set_root_password "$4" "$5"
 configure_bootloader "$7" "$8" "$9"
 configure_snapper
+if [ "$7" = "True" ] && [ "$9" = "True" ]; then
+    encrypt_swap "$8"
+fi
