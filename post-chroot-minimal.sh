@@ -114,5 +114,5 @@ set_root_password "$4" "$5"
 configure_bootloader "$7" "$8" "$9"
 configure_snapper
 if [ "$7" = "True" ] && [ "$9" = "True" ]; then
-    encrypt_swap "$7"
+    encrypt_swap "$8"
 fi
