@@ -89,10 +89,10 @@ function encrypt_swap() {
     echo "y" | mkfs.ext2 -L cryptswap "/dev/$1"2 1M
 
     swap_line=$(grep swap /etc/crypttab)
-    sed -i -e "s|$swap_line|LABEL=cryptswap    /dev/urandom    swap,offset=2048,cipher=aes-xts-plain68,size=512|g"
+    sed -i -e "s|$swap_line|LABEL=cryptswap    /dev/urandom    swap,offset=2048,cipher=aes-xts-plain68,size=512|g" /etc/crypttab
 
     swap_uuid=$(grep swap /etc/fstab | awk '{print $1}')
-    sed -i -e "s|$swap_uuid|LABEL=/dev/mapper/swap|g"
+    sed -i -e "s|$swap_uuid|LABEL=/dev/mapper/swap|g" /etc/fstab
     mount -a
 }
 
@@ -114,5 +114,5 @@ set_root_password "$4" "$5"
 configure_bootloader "$7" "$8" "$9"
 configure_snapper
 if [ "$7" = "True" ] && [ "$9" = "True" ]; then
-    encrypt_swap $7
+    encrypt_swap "$7"
 fi
