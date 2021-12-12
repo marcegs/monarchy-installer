@@ -92,7 +92,7 @@ function encrypt_swap() {
     sed -i -e "s|$swap_line|swap    LABEL=cryptswap    /dev/urandom    swap,offset=2048,cipher=aes-xts-plain64,size=512|g" /etc/crypttab
 
     swap_uuid=$(grep swap /etc/fstab | awk '{print $1}')
-    sed -i -e "s|$swap_uuid|LABEL=/dev/mapper/swap|g" /etc/fstab
+    sed -i -e "s|$swap_uuid|/dev/mapper/swap|g" /etc/fstab
 }
 
 # 1 - timesone
