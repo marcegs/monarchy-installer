@@ -63,8 +63,7 @@ function SelectSwap() {
 }
 
 function SelectEncryption() {
-    should_encrypt=$(yes_no_box "Disk encryption" "Would you like to encrypt your new installation?
-WARNING: Swap encryption is still missing")
+    should_encrypt=$(yes_no_box "Disk encryption" "Would you like to encrypt your new installation?")
     # if [ $should_encrypt = "True" ]; then
     # encrypt_password=$(get_password "Encryption")
     # fi
