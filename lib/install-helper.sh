@@ -7,6 +7,9 @@ function update_system_clock() {
 function disk_partition() {
     # UEFI GPT ONLY FOR NOW!
 
+    sgdisk --zap-all "/dev/$install_disk"
+    wipefs -a "/dev/$install_disk"
+
     swap_size=$(free -m | grep Mem: | awk '{print $2}')
 
     if [ "$should_swap" = "True" ]; then

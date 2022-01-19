@@ -44,7 +44,6 @@ function SelectTimezone() {
 }
 
 function SelectKeyboard() {
-
     keymap_list=$(get_keymaps)
     keymap_select=$(menu_box "Keyboard Layout" "Select your keyboard layout" "" "${keymap_list[@]}")
     localectl set-keymap "$keymap_select"
@@ -118,7 +117,6 @@ function Install() {
 }
 
 function MainMenu() {
-
     whiptail --title "Monarchy installer" --menu --cancel-button "Exit" --default-item "$1" --ok-button "Select" "" 20 80 12 \
         "Installation Type" "    $install_type" \
         "Time zone" "    $timezone" \
@@ -202,6 +200,7 @@ Let's do it?")
     done
 
     Install
+    clear
 else
     echo ":("
 fi
