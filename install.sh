@@ -53,6 +53,10 @@ function SelectKeyboard() {
 function SelectInstallLocation() {
     disks=$(get_disks)
     install_disk=$(menu_box "Disks" "Select which drive to install Arch Linux." "True" "${disks[@]}")
+    is_nvme=$(echo "$install_disk" | grep nvme)
+    if [ -n "$is_nvme" ]; then
+        install_disk="$install_disk"p
+    fi
     echo "$install_disk"
 }
 
