@@ -53,6 +53,10 @@ function disk_partition() {
 }
 
 function format_partition() {
+    is_nvme=$(echo "$install_disk" | grep nvme)
+    if [ -n "$is_nvme" ]; then
+        install_disk="$install_disk"p
+    fi
     mkfs.fat -F 32 "/dev/$install_disk"1
     sdx="2"
     if [ "$should_swap" = "True" ]; then
