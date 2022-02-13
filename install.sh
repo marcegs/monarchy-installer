@@ -97,17 +97,11 @@ function Install() {
     # == 1 ==
 
     update_system_clock
-    read -n1 -p "aa"
     disk_partition
-    read -n1 -p "aa"
     format_partition
-    read -n1 -p "aa"
     mount_partition
-    read -n1 -p "aa"
     install_base
-    read -n1 -p "aa"
     gen_fstab
-    read -n1 -p "aa"
 
     # == 2 ==
 
