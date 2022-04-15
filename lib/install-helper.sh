@@ -10,46 +10,20 @@ function disk_partition() {
     sgdisk --zap-all "/dev/$install_disk"
     wipefs -a "/dev/$install_disk"
 
-    swap_size=$(free -m | grep Mem: | awk '{print $2}')
-
-    if [ "$should_swap" = "True" ]; then
-        (
-            echo g              # new GPT partition table
-            echo n              # new partition
-            echo                # default number
-            echo                # default start
-            echo +500M          # 500m
-            echo t              # set type
-            echo 1              # EFI file system
-            echo n              # new partition
-            echo                # default number
-            echo                # default start
-            echo "+$swap_size"M # swap same size as memory
-            echo t              # set type
-            echo 2              # partition number 2
-            echo 19             # linux swap
-            echo n              # new partition
-            echo                # default number
-            echo                # default start
-            echo                # all available space
-            echo w              # write changes to disk
-        ) | fdisk "/dev/$install_disk"
-    else
-        (
-            echo g     # new GPT partition table
-            echo n     # new partition
-            echo       # default number
-            echo       # default start
-            echo +500M # 500m
-            echo t     # set type
-            echo 1     # EFI file system
-            echo n     # new partition
-            echo       # default number
-            echo       # default start
-            echo       # all available space
-            echo w     # write changes to disk
-        ) | fdisk "/dev/$install_disk"
-    fi
+    (
+        echo g     # new GPT partition table
+        echo n     # new partition
+        echo       # default number
+        echo       # default start
+        echo +500M # 500m
+        echo t     # set type
+        echo 1     # EFI file system
+        echo n     # new partition
+        echo       # default number
+        echo       # default start
+        echo       # all available space
+        echo w     # write changes to disk
+    ) | fdisk "/dev/$install_disk"
 }
 
 function format_partition() {
@@ -59,15 +33,6 @@ function format_partition() {
     fi
     mkfs.fat -F 32 "/dev/$install_disk"1
     sdx="2"
-    if [ "$should_swap" = "True" ]; then
-        #if [ "$should_encrypt" = "True" ]; then
-        #    echo "????????????????????????"
-        #else
-        mkswap "/dev/$install_disk"2
-        swapon "/dev/$install_disk"2
-        sdx="3"
-        #fi
-    fi
     if [ "$should_encrypt" = "True" ]; then
 
         # echo "$encrypt_password" | cryptsetup luksFormat --cipher aes-xts-plain64 --key-size 256 --hash sha256 --use-random "/dev/$install_disk$sdx" -d -
@@ -85,11 +50,8 @@ function format_partition() {
 
 function mount_partition() {
     temp_install_disk=""
-    if [ "$should_swap" = "True" ]; then
-        temp_install_disk="/dev/$install_disk"3
-    else
-        temp_install_disk="/dev/$install_disk"2
-    fi
+
+    temp_install_disk="/dev/$install_disk"2
 
     if [ "$should_encrypt" = "True" ]; then
         temp_install_disk="/dev/mapper/cryptroot"
@@ -107,13 +69,13 @@ function mount_partition() {
 
     cd /
     umount /mnt
-    mount -o relatime,space_cache=v2,ssd,compress=lzo,subvol=@ $temp_install_disk /mnt
+    mount -o noatime,space_cache=v2,compress=zstd,discard=async,subvol=@ $temp_install_disk /mnt
     mkdir -p /mnt/{boot,home,var/log,var/cache/pacman/pkg,btrfs,tmp}
     mount "/dev/$install_disk"1 /mnt/boot
-    mount -o relatime,space_cache=v2,ssd,compress=lzo,subvol=@home $temp_install_disk /mnt/home
-    mount -o relatime,space_cache=v2,ssd,compress=lzo,subvol=@log $temp_install_disk /mnt/var/log
-    mount -o relatime,space_cache=v2,ssd,compress=lzo,subvol=@pkg $temp_install_disk /mnt/var/cache/pacman/pkg/
-    mount -o relatime,space_cache=v2,ssd,compress=lzo,subvol=@tmp $temp_install_disk /mnt/tmp
+    mount -o noatime,space_cache=v2,compress=zstd,discard=async,subvol=@home $temp_install_disk /mnt/home
+    mount -o noatime,space_cache=v2,compress=zstd,discard=async,subvol=@log $temp_install_disk /mnt/var/log
+    mount -o noatime,space_cache=v2,compress=zstd,discard=async,subvol=@pkg $temp_install_disk /mnt/var/cache/pacman/pkg/
+    mount -o noatime,space_cache=v2,compress=zstd,discard=async,subvol=@tmp $temp_install_disk /mnt/tmp
 
     unset temp_install_disk
 }

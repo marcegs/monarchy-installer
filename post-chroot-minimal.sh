@@ -84,15 +84,13 @@ function configure_snapper() {
     grub-mkconfig -o /boot/grub/grub.cfg
 }
 
-function encrypt_swap() {
-    swapoff "/dev/$1"2
-    echo "y" | mkfs.ext2 -L cryptswap "/dev/$1"2 1M
-
-    swap_line=$(grep swap /etc/crypttab)
-    sed -i -e "s|$swap_line|swap    LABEL=cryptswap    /dev/urandom    swap,offset=2048,cipher=aes-xts-plain64,size=512|g" /etc/crypttab
-
-    swap_uuid=$(grep swap /etc/fstab | awk '{print $1}')
-    sed -i -e "s|$swap_uuid|/dev/mapper/swap|g" /etc/fstab
+function setup_zram() {
+    echo "zram machine goes brrrrrr"
+    git clone https://aur.archlinux.org/zramd.git
+    cd zram
+    makepkg -si --noconfirm
+    cd ..
+    sudo systemctl enable zramd.service
 }
 
 # 1 - timesone
@@ -103,7 +101,6 @@ function encrypt_swap() {
 # 6 - keymap_select
 # 7 - should_encrypt
 # 8 - install_disk
-# 9 - should_swap
 
 set_timesone "$1"
 set_localization "$2" "$6"
@@ -112,6 +109,4 @@ create_initramfs "$7"
 set_root_password "$4" "$5"
 configure_bootloader "$7" "$8" "$9"
 configure_snapper
-if [ "$7" = "True" ] && [ "$9" = "True" ]; then
-    encrypt_swap "$8"
-fi
+setup_zram
