@@ -85,9 +85,8 @@ function configure_snapper() {
 }
 
 function setup_zram() {
-    echo "zram machine goes brrrrrr"
     git clone https://aur.archlinux.org/zramd.git
-    cd zram
+    cd zramd
     makepkg -si --noconfirm
     cd ..
     sudo systemctl enable zramd.service
