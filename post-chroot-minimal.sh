@@ -1,7 +1,7 @@
 #!/bin/bash
 
 function set_timesone() {
-    ln -sf $1 /etc/localtime
+    ln -sf "$1" /etc/localtime
     hwclock --systohc
 }
 
@@ -84,15 +84,21 @@ function configure_snapper() {
     grub-mkconfig -o /boot/grub/grub.cfg
 }
 
-function encrypt_swap() {
-    swapoff "/dev/$1"2
-    echo "y" | mkfs.ext2 -L cryptswap "/dev/$1"2 1M
+function configure_sudo() {
+    usermod -aG wheel "$1"
+    sed -i "s/# %wheel ALL=(ALL:ALL) ALL/%wheel ALL=(ALL:ALL) ALL/g" /etc/sudoers
+}
 
-    swap_line=$(grep swap /etc/crypttab)
-    sed -i -e "s|$swap_line|swap    LABEL=cryptswap    /dev/urandom    swap,offset=2048,cipher=aes-xts-plain64,size=512|g" /etc/crypttab
-
-    swap_uuid=$(grep swap /etc/fstab | awk '{print $1}')
-    sed -i -e "s|$swap_uuid|/dev/mapper/swap|g" /etc/fstab
+function setup_zramd() {
+    sed -i "s/# %wheel ALL=(ALL:ALL) NOPASSWD: ALL/%wheel ALL=(ALL:ALL) NOPASSWD: ALL/g" /etc/sudoers
+    cd /home/"$1"
+    sudo -u "$1" git clone https://aur.archlinux.org/zramd.git
+    cd zramd
+    sudo -u "$1" makepkg -si --noconfirm
+    sudo systemctl enable zramd.service
+    cd ..
+    rm -r zramd
+    sed -i "s/%wheel ALL=(ALL:ALL) NOPASSWD: ALL/# %wheel ALL=(ALL:ALL) NOPASSWD: ALL/g" /etc/sudoers
 }
 
 # 1 - timesone
@@ -103,7 +109,6 @@ function encrypt_swap() {
 # 6 - keymap_select
 # 7 - should_encrypt
 # 8 - install_disk
-# 9 - should_swap
 
 set_timesone "$1"
 set_localization "$2" "$6"
@@ -112,6 +117,5 @@ create_initramfs "$7"
 set_root_password "$4" "$5"
 configure_bootloader "$7" "$8" "$9"
 configure_snapper
-if [ "$7" = "True" ] && [ "$9" = "True" ]; then
-    encrypt_swap "$8"
-fi
+configure_sudo "$5"
+setup_zramd "$5"

@@ -15,12 +15,12 @@ Monarchy installer is an Arch Linux installer for those who just wanna get it ov
 - Minimal arch install with BTRFS file system and snapper
 - Optional disk encryption
 - Options between complete and minimal install (useless option atm c:)
+- Zram instead of swap partition!
 
 ### Planned Features
 
 - [ ] Prevent user from leaving a field blank or an invalid input
 - [ ] Choose between ext4 and btrfs file systems
-- [ ] Give the option to set a custom swap size (currently it is the amount of ram on the system)
 - [ ] Complete install 
 - [ ] Everything else
 

@@ -9,7 +9,6 @@ timezone=""
 locale_select=""
 keymap_select=""
 install_disk=""
-should_swap="True"
 should_encrypt="False"
 user_name=""
 pc_name="monarchy"
@@ -56,11 +55,6 @@ function SelectInstallLocation() {
     echo "$install_disk"
 }
 
-function SelectSwap() {
-    should_swap=$(yes_no_box "Swap" "Would you like to create a Swap partition?")
-    echo "$should_swap"
-}
-
 function SelectEncryption() {
     should_encrypt=$(yes_no_box "Disk encryption" "Would you like to encrypt your new installation?")
     # if [ $should_encrypt = "True" ]; then
@@ -103,7 +97,7 @@ function Install() {
 
     mkdir /mnt/post-chroot-temp/
     cp /root/monarchy-installer/post-chroot-minimal.sh /mnt/post-chroot-temp/
-    arch-chroot /mnt /usr/bin/bash /post-chroot-temp/post-chroot-minimal.sh "$timezone" "$locale_select" "$pc_name" "$password" "$user_name" "$keymap_select" "$should_encrypt" "$install_disk" "$should_swap"
+    arch-chroot /mnt /usr/bin/bash /post-chroot-temp/post-chroot-minimal.sh "$timezone" "$locale_select" "$pc_name" "$password" "$user_name" "$keymap_select" "$should_encrypt" "$install_disk" 
 
     if [ "$install_type" = "Complete" ]; then
         cp /root/monarchy-installer/post-chroot-complete.sh /mnt/post-chroot-temp/
@@ -123,7 +117,6 @@ function MainMenu() {
         "Locale" "    $locale_select" \
         "Keyboard layout" "    $keymap_select" \
         "Install location" "    $install_disk" \
-        "Swap" "    $should_swap" \
         "Encryption" "    $should_encrypt" \
         "User" "    $user_name" \
         "Host name" "    $pc_name" \
@@ -163,9 +156,6 @@ if [ "$awser" = "True" ]; then
             ;;
         "Install location")
             install_disk=$(SelectInstallLocation)
-            ;;
-        "Swap")
-            should_swap=$(SelectSwap)
             ;;
         "Encryption")
             should_encrypt=$(SelectEncryption)
