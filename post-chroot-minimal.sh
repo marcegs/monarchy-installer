@@ -90,6 +90,7 @@ function configure_sudo() {
 }
 
 function setup_zramd() {
+    sed -i "s/# %wheel ALL=(ALL:ALL) NOPASSWD: ALL/%wheel ALL=(ALL:ALL) NOPASSWD: ALL/g" /etc/sudoers
     cd /home/"$1"
     sudo -u "$1" git clone https://aur.archlinux.org/zramd.git
     cd zramd
@@ -97,6 +98,7 @@ function setup_zramd() {
     sudo systemctl enable zramd.service
     cd ..
     rm -r zramd
+    sed -i "s/%wheel ALL=(ALL:ALL) NOPASSWD: ALL/# %wheel ALL=(ALL:ALL) NOPASSWD: ALL/g" /etc/sudoers
 }
 
 # 1 - timesone
