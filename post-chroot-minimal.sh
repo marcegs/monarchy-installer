@@ -1,7 +1,7 @@
 #!/bin/bash
 
 function set_timesone() {
-    ln -sf $1 /etc/localtime
+    ln -sf "$1" /etc/localtime
     hwclock --systohc
 }
 
@@ -84,12 +84,19 @@ function configure_snapper() {
     grub-mkconfig -o /boot/grub/grub.cfg
 }
 
-function setup_zram() {
-    git clone https://aur.archlinux.org/zramd.git
+function configure_sudo() {
+    usermod -aG wheel "$1"
+    sed -i "s/# %wheel ALL=(ALL:ALL) ALL/%wheel ALL=(ALL:ALL) ALL/g" /etc/sudoers
+}
+
+function setup_zramd() {
+    cd /home/"$1"
+    sudo -u "$1" git clone https://aur.archlinux.org/zramd.git
     cd zramd
-    makepkg -si --noconfirm
-    cd ..
+    sudo -u "$1" makepkg -si --noconfirm
     sudo systemctl enable zramd.service
+    cd ..
+    rm -r zramd
 }
 
 # 1 - timesone
@@ -108,4 +115,5 @@ create_initramfs "$7"
 set_root_password "$4" "$5"
 configure_bootloader "$7" "$8" "$9"
 configure_snapper
-setup_zram
+configure_sudo "$5"
+setup_zramd "$5"
