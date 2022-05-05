@@ -90,7 +90,7 @@ function configure_sudo() {
 }
 
 function setup_zramd() {
-    pacman -S zram-generator
+    pacman -S zram-generator --noconfirm
     echo "[zram0]" >> /etc/systemd/zram-generator.conf
     systemctl enable systemd-zram-setup@zram0.service
 }
