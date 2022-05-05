@@ -90,15 +90,9 @@ function configure_sudo() {
 }
 
 function setup_zramd() {
-    sed -i "s/# %wheel ALL=(ALL:ALL) NOPASSWD: ALL/%wheel ALL=(ALL:ALL) NOPASSWD: ALL/g" /etc/sudoers
-    cd /home/"$1"
-    sudo -u "$1" git clone https://aur.archlinux.org/zramd.git
-    cd zramd
-    sudo -u "$1" makepkg -si --noconfirm
-    sudo systemctl enable zramd.service
-    cd ..
-    rm -r zramd
-    sed -i "s/%wheel ALL=(ALL:ALL) NOPASSWD: ALL/# %wheel ALL=(ALL:ALL) NOPASSWD: ALL/g" /etc/sudoers
+    pacman -S zram-generator
+    echo "[zram0]\n" >> /etc/systemd/zram-generator.conf
+    systemctl enable systemd-zram-setup@zram0.service
 }
 
 # 1 - timesone
@@ -118,4 +112,4 @@ set_root_password "$4" "$5"
 configure_bootloader "$7" "$8" "$9"
 configure_snapper
 configure_sudo "$5"
-setup_zramd "$5"
+setup_zramd
